@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZER0 — Command alias manager for Arch Linux</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--red:#e03030;--red2:#ff4444;--orange:#e07020;--yellow:#d4b000;--cyan:#00d4ff;--green:#00e050;--bg:#0a0a0a;--bg2:#111111;--bg3:#181818;--bg4:#222222;--border:#2a2a2a;--dim:#555;--text:#ccc;--white:#f0f0f0}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;line-height:1.7;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.04) 2px,rgba(0,0,0,.04) 4px);pointer-events:none;z-index:1000}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;height:48px;background:rgba(10,10,10,.92);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;z-index:100;backdrop-filter:blur(8px)}
+.nav-logo{font-family:'Space Mono',monospace;font-weight:700;font-size:15px;color:var(--red);letter-spacing:.1em;text-decoration:none}
+.nav-logo span{color:var(--dim)}
+.nav-links{display:flex;align-items:center;gap:1.5rem;list-style:none}
+.nav-links a{color:var(--dim);text-decoration:none;font-size:12px;letter-spacing:.05em;transition:color .2s}
+.nav-links a:hover{color:var(--cyan)}
+
+/* LANGUAGE TOGGLE */
+.lang-toggle{display:flex;align-items:center;gap:0;border:1px solid var(--border);border-radius:3px;overflow:hidden;background:var(--bg2)}
+.lang-btn{padding:4px 10px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;background:none;border:none;cursor:pointer;color:var(--dim);transition:all .2s;letter-spacing:.08em}
+.lang-btn.active{background:var(--red);color:#fff}
+.lang-btn:hover:not(.active){color:var(--white);background:var(--bg3)}
+.lang-divider{width:1px;height:20px;background:var(--border)}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 2rem 4rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px;opacity:.3;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black,transparent)}
+.hero::after{content:'';position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(224,48,48,.08) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+.hero-content{position:relative;z-index:1;text-align:center}
+.ascii-logo{font-family:'Space Mono',monospace;font-size:clamp(7px,1.5vw,13px);line-height:1.2;white-space:pre;margin-bottom:2.5rem;animation:fadeDown .8s ease both}
+.ascii-logo .r{color:var(--red)}.ascii-logo .o{color:var(--orange)}.ascii-logo .y{color:var(--yellow)}.ascii-logo .d{color:#333}
+.hero-tag{font-size:11px;color:var(--dim);letter-spacing:.2em;text-transform:uppercase;margin-bottom:1rem;animation:fadeDown .8s .1s ease both}
+.hero-title{font-family:'Space Mono',monospace;font-size:clamp(20px,4vw,36px);font-weight:700;color:var(--white);margin-bottom:.75rem;animation:fadeDown .8s .2s ease both}
+.hero-title .accent{color:var(--red)}
+.hero-sub{font-size:13px;color:var(--dim);margin-bottom:2.5rem;animation:fadeDown .8s .3s ease both}
+.badges{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;animation:fadeDown .8s .4s ease both}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--border);border-radius:3px;font-size:11px;color:var(--dim);background:var(--bg2)}
+.badge .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+.hero-buttons{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;animation:fadeDown .8s .5s ease both}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;text-decoration:none;border-radius:3px;transition:all .2s;cursor:pointer;border:none}
+.btn-primary{background:var(--red);color:#fff}
+.btn-primary:hover{background:var(--red2);transform:translateY(-1px);box-shadow:0 4px 20px rgba(224,48,48,.4)}
+.btn-secondary{background:transparent;color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--cyan);color:var(--cyan);transform:translateY(-1px)}
+
+/* TERMINAL */
+.terminal-section{padding:4rem 2rem;max-width:800px;margin:0 auto}
+.terminal{background:var(--bg2);border:1px solid var(--border);border-radius:6px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6);animation:fadeUp .8s .6s ease both}
+.terminal-bar{background:var(--bg3);padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
+.t-dot{width:11px;height:11px;border-radius:50%}
+.t-dot.red{background:#ff5f57}.t-dot.yellow{background:#febc2e}.t-dot.green{background:#28c840}
+.t-title{margin:0 auto;font-size:11px;color:var(--dim);letter-spacing:.05em}
+.terminal-body{padding:1.5rem;font-size:13px;line-height:1.8}
+.t-comment{color:var(--dim)}.t-prompt{color:var(--green)}.t-cmd{color:var(--white)}.t-out{color:var(--cyan)}.t-success{color:var(--green)}
+.t-banner-r{color:var(--red)}.t-banner-o{color:var(--orange)}.t-banner-y{color:var(--yellow)}.t-banner-d{color:#2a2a2a}
+
+/* FEATURES */
+.features{padding:5rem 2rem;max-width:1100px;margin:0 auto}
+.section-label{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:.5rem}
+.section-title{font-family:'Space Mono',monospace;font-size:clamp(20px,3vw,28px);font-weight:700;color:var(--white);margin-bottom:3rem}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.feature-card{background:var(--bg);padding:2rem;transition:background .2s}
+.feature-card:hover{background:var(--bg2)}
+.feature-icon{font-size:22px;margin-bottom:1rem}
+.feature-title{font-family:'Space Mono',monospace;font-size:14px;font-weight:700;color:var(--white);margin-bottom:.5rem}
+.feature-desc{font-size:12px;color:var(--dim);line-height:1.8}
+
+/* INSTALL */
+.install-section{padding:5rem 2rem;max-width:800px;margin:0 auto}
+.code-block{background:var(--bg2);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin:1.5rem 0}
+.code-header{background:var(--bg3);padding:8px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);font-size:11px;color:var(--dim)}
+.copy-btn{background:none;border:1px solid var(--border);color:var(--dim);font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 8px;border-radius:3px;cursor:pointer;transition:all .2s}
+.copy-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.copy-btn.copied{border-color:var(--green);color:var(--green)}
+pre{padding:1.25rem 1.5rem;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.8;overflow-x:auto;color:var(--text)}
+pre .c{color:var(--dim)}pre .k{color:var(--cyan)}
+
+/* DOCS */
+.docs-section{padding:5rem 2rem;max-width:1100px;margin:0 auto}
+.docs-grid{display:grid;grid-template-columns:240px 1fr;gap:3rem;align-items:start}
+.docs-nav{position:sticky;top:64px}
+.docs-nav-title{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);margin-bottom:.75rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)}
+.docs-nav ul{list-style:none}
+.docs-nav li{margin-bottom:2px}
+.docs-nav a{display:block;padding:5px 10px;font-size:12px;color:var(--dim);text-decoration:none;border-radius:3px;border-left:2px solid transparent;transition:all .15s}
+.docs-nav a:hover,.docs-nav a.active{color:var(--white);border-left-color:var(--red);background:var(--bg2);padding-left:12px}
+.docs-content section{margin-bottom:4rem;scroll-margin-top:64px}
+.docs-content h2{font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--white);margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)}
+.docs-content h3{font-size:13px;font-weight:700;color:var(--cyan);margin:1.5rem 0 .5rem;letter-spacing:.05em}
+.docs-content p{font-size:13px;color:var(--text);margin-bottom:1rem;line-height:1.8}
+ic{background:var(--bg3);border:1px solid var(--border);padding:1px 6px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--cyan)}
+table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:12px}
+th{text-align:left;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);color:var(--dim);font-weight:400;letter-spacing:.05em;text-transform:uppercase;font-size:10px}
+td{padding:8px 12px;border:1px solid var(--border);color:var(--text)}
+td:first-child{color:var(--cyan);font-family:'JetBrains Mono',monospace;white-space:nowrap}
+tr:hover td{background:var(--bg2)}
+.ic{background:var(--bg3);border:1px solid var(--border);padding:1px 6px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--cyan);display:inline}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:3rem 2rem;text-align:center}
+.footer-logo{font-family:'Space Mono',monospace;font-size:20px;font-weight:700;margin-bottom:.5rem}
+.footer-logo .r{color:var(--red)}.footer-logo .d{color:var(--dim)}
+.footer-links{display:flex;gap:1.5rem;justify-content:center;margin:1.5rem 0;flex-wrap:wrap}
+.footer-links a{color:var(--dim);text-decoration:none;font-size:12px;transition:color .2s}
+.footer-links a:hover{color:var(--cyan)}
+.footer-copy{font-size:11px;color:#333}
+
+/* TOAST */
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:10px 20px;font-size:12px;color:var(--cyan);z-index:9999;transition:transform .3s ease,opacity .3s ease;opacity:0;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* ANIMATIONS */
+@keyframes fadeDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.cursor::after{content:'█';animation:blink 1s infinite;color:var(--red);font-size:.9em}
+
+/* RESPONSIVE */
+@media(max-width:900px){.docs-grid{grid-template-columns:1fr}.docs-nav{display:none}}
+@media(max-width:600px){.nav-links li:not(:last-child):not(:nth-last-child(2)){display:none}.hero-title{font-size:22px}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">ZER<span>0</span></a>
+  <ul class="nav-links">
+    <li><a href="#install"   data-i="nav_install">Install</a></li>
+    <li><a href="#features"  data-i="nav_features">Features</a></li>
+    <li><a href="#docs"      data-i="nav_docs">Docs</a></li>
+    <li><a href="https://github.com/LogLabsHQ/ZER0/wiki" target="_blank" data-i="nav_wiki">Wiki</a></li>
+    <li><a href="https://github.com/LogLabsHQ/ZER0"      target="_blank">GitHub ↗</a></li>
+    <li>
+      <div class="lang-toggle">
+        <button class="lang-btn active" onclick="setLang('en')">EN</button>
+        <div class="lang-divider"></div>
+        <button class="lang-btn"       onclick="setLang('es')">ES</button>
+      </div>
+    </li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <pre class="ascii-logo"><span class="r">  ██████╗ ███████╗██████╗  ██████╗ </span>
+<span class="o">  ╚════██╗██╔════╝██╔══██╗██╔═████╗</span>
+<span class="y">   █████╔╝█████╗  ██████╔╝██║██╔██║</span>
+<span class="o">  ██╔═══╝ ██╔══╝  ██╔══██╗████╔╝██║</span>
+<span class="r">  ███████╗███████╗██║  ██║╚██████╔╝</span>
+<span class="d">  ╚══════╝╚══════╝╚═╝  ╚═╝ ╚═════╝ </span></pre>
+    <p class="hero-tag">v1.0.3 · Arch Linux · MIT License</p>
+    <h1 class="hero-title" data-i="hero_title">Command alias manager<br>for <span class="accent">Arch Linux</span></h1>
+    <p class="hero-sub" data-i="hero_sub">Type less. Do more. 80+ built-in shortcuts. Interactive REPL session.</p>
+    <div class="badges">
+      <span class="badge"><span class="dot"></span> Python 3.10+</span>
+      <span class="badge">bash / zsh / fish</span>
+      <span class="badge">MIT License</span>
+      <span class="badge" data-i="badge_os">Open Source</span>
+    </div>
+    <div class="hero-buttons">
+      <a href="#install" class="btn btn-primary"   data-i="btn_start">→ Get started</a>
+      <a href="https://github.com/LogLabsHQ/ZER0" target="_blank" class="btn btn-secondary" data-i="btn_github">⌥ View on GitHub</a>
+    </div>
+  </div>
+</section>
+
+<!-- TERMINAL -->
+<div class="terminal-section">
+  <div class="terminal">
+    <div class="terminal-bar">
+      <div class="t-dot red"></div><div class="t-dot yellow"></div><div class="t-dot green"></div>
+      <span class="t-title">bash — youruser@arch</span>
+    </div>
+    <div class="terminal-body">
+      <div><span class="t-comment"># <span data-i="term_install_comment">Install ZER0</span></span></div>
+      <div><span class="t-prompt">$</span> <span class="t-cmd">git clone https://github.com/LogLabsHQ/ZER0.git && cd ZER0</span></div>
+      <div><span class="t-prompt">$</span> <span class="t-cmd">chmod +x install.sh && ./install.sh</span></div>
+      <br>
+      <div><span class="t-comment"># <span data-i="term_open_comment">Open ZER0</span></span></div>
+      <div><span class="t-prompt">$</span> <span class="t-cmd">zero</span></div>
+      <br>
+      <div class="t-banner-r">  ██████╗ ███████╗██████╗  ██████╗ </div>
+      <div class="t-banner-o">  ╚════██╗██╔════╝██╔══██╗██╔═████╗</div>
+      <div class="t-banner-y">   █████╔╝█████╗  ██████╔╝██║██╔██║</div>
+      <div class="t-banner-o">  ██╔═══╝ ██╔══╝  ██╔══██╗████╔╝██║</div>
+      <div class="t-banner-r">  ███████╗███████╗██║  ██║╚██████╔╝</div>
+      <br>
+      <div><span class="t-out">  <span data-i="term_hello">Hello</span>, Corona. ZER0 v1.0.3 <span data-i="term_online">is online</span>.</span></div>
+      <div><span class="t-out">  <span data-i="term_devby">Developed by</span>: LogLabs · https://github.com/LogLabsHQ</span></div>
+      <br>
+      <div><span class="t-prompt">[corona@ZER0 ~]$</span> <span class="t-cmd">upd</span></div>
+      <div><span class="t-comment">  → sudo pacman -Syu</span></div>
+      <div><span class="t-prompt">[corona@ZER0 ~]$</span> <span class="t-cmd">gs</span></div>
+      <div><span class="t-comment">  → git status</span></div>
+      <div><span class="t-prompt">[corona@ZER0 ~]$</span> <span class="t-cmd">add deploy "git push && ssh server ./deploy.sh"</span></div>
+      <div><span class="t-success">  ✔  <span data-i="term_saved">Shortcut saved</span>: deploy</span></div>
+      <br>
+      <div><span class="t-prompt">[corona@ZER0 ~]$</span> <span class="cursor"></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <p class="section-label">// <span data-i="sec_features">features</span></p>
+  <h2 class="section-title" data-i="features_title">Everything you need.<br>Nothing you don't.</h2>
+  <div class="features-grid">
+    <div class="feature-card"><div class="feature-icon">⚡</div><div class="feature-title" data-i="f1_title">80+ Default shortcuts</div><p class="feature-desc" data-i="f1_desc">Pacman, Git, Docker, Python, Node, Systemd, network and more — ready on first launch.</p></div>
+    <div class="feature-card"><div class="feature-icon">🖥️</div><div class="feature-title" data-i="f2_title">Interactive REPL</div><p class="feature-desc" data-i="f2_desc">Your own shell-like session with a custom <span class="ic">[user@ZER0 ~]$</span> prompt.</p></div>
+    <div class="feature-card"><div class="feature-icon">🌐</div><div class="feature-title" data-i="f3_title">Bilingual</div><p class="feature-desc" data-i="f3_desc">Full Spanish and English support. Choose at install time or switch live with <span class="ic">lang</span>.</p></div>
+    <div class="feature-card"><div class="feature-icon">📦</div><div class="feature-title" data-i="f4_title">Single file install</div><p class="feature-desc" data-i="f4_desc">One <span class="ic">install.sh</span> does everything. No extra dependencies.</p></div>
+    <div class="feature-card"><div class="feature-icon">🔒</div><div class="feature-title" data-i="f5_title">100% local</div><p class="feature-desc" data-i="f5_desc">No telemetry. No accounts. No network calls. Your data stays on your machine.</p></div>
+    <div class="feature-card"><div class="feature-icon">🎨</div><div class="feature-title" data-i="f6_title">Colorful terminal UI</div><p class="feature-desc" data-i="f6_desc">Styled banner, colored prompt, box UI and LogLabs branding. Built for Arch terminals.</p></div>
+  </div>
+</section>
+
+<!-- INSTALL -->
+<section class="install-section" id="install">
+  <p class="section-label">// <span data-i="sec_install">installation</span></p>
+  <h2 class="section-title" data-i="install_title">Up and running<br>in 60 seconds</h2>
+  <div class="code-block">
+    <div class="code-header">
+      <span>bash</span>
+      <button class="copy-btn" onclick="copyCode(this,'install-code')" data-i="copy_btn">copy</button>
+    </div>
+    <pre id="install-code"><span class="c"># 1. <span data-i="step_clone">Clone</span></span>
+<span class="k">git clone</span> https://github.com/LogLabsHQ/ZER0.git
+<span class="k">cd</span> ZER0
+
+<span class="c"># 2. <span data-i="step_install">Install</span></span>
+<span class="k">chmod</span> +x install.sh &amp;&amp; ./install.sh
+
+<span class="c"># 3. <span data-i="step_open">Reload and open</span></span>
+<span class="k">source</span> ~/.bashrc
+zero</pre>
+  </div>
+  <p style="font-size:12px;color:var(--dim)" data-i="install_note">After install, ZER0 also responds to <span class="ic">-Z</span> and <span class="ic">$Z</span>.</p>
+</section>
+
+<!-- DOCS -->
+<section class="docs-section" id="docs">
+  <p class="section-label">// <span data-i="sec_docs">documentation</span></p>
+  <h2 class="section-title" data-i="docs_title">Reference</h2>
+  <div class="docs-grid">
+    <nav class="docs-nav">
+      <div class="docs-nav-title" data-i="on_this_page">On this page</div>
+      <ul>
+        <li><a href="#doc-commands" data-i="dnav_commands">Internal Commands</a></li>
+        <li><a href="#doc-shortcuts" data-i="dnav_shortcuts">Default Shortcuts</a></li>
+        <li><a href="#doc-config" data-i="dnav_config">Configuration</a></li>
+        <li><a href="#doc-update" data-i="dnav_update">Update</a></li>
+        <li><a href="#doc-uninstall" data-i="dnav_uninstall">Uninstall</a></li>
+      </ul>
+    </nav>
+    <div class="docs-content">
+
+      <section id="doc-commands">
+        <h2>💻 <span data-i="doc_commands_title">Internal Commands</span></h2>
+        <p data-i="doc_commands_desc">All commands available inside the ZER0 session. No prefix needed.</p>
+        <table>
+          <tr><th data-i="th_command">Command</th><th data-i="th_aliases">Aliases</th><th data-i="th_desc">Description</th></tr>
+          <tr><td>list</td><td>ls, -l</td><td data-i="cmd_list">List all saved shortcuts</td></tr>
+          <tr><td>add &lt;shortcut&gt; &lt;cmd&gt;</td><td>a</td><td data-i="cmd_add">Add or update a shortcut</td></tr>
+          <tr><td>rm &lt;shortcut&gt;</td><td>remove, del</td><td data-i="cmd_rm">Delete a shortcut</td></tr>
+          <tr><td>&lt;shortcut&gt; [args…]</td><td>—</td><td data-i="cmd_run">Run a shortcut</td></tr>
+          <tr><td>clear</td><td>cls, c</td><td data-i="cmd_clear">Clear screen and show banner</td></tr>
+          <tr><td>about</td><td>—</td><td data-i="cmd_about">Show info about ZER0</td></tr>
+          <tr><td>lang</td><td>—</td><td data-i="cmd_lang">Change language</td></tr>
+          <tr><td>help</td><td>--help, -h</td><td data-i="cmd_help">Show command list</td></tr>
+          <tr><td>version</td><td>-v</td><td data-i="cmd_version">Show current version</td></tr>
+          <tr><td>exit</td><td>quit, q, Ctrl+C</td><td data-i="cmd_exit">Exit ZER0</td></tr>
+        </table>
+      </section>
+
+      <section id="doc-shortcuts">
+        <h2>⚡ <span data-i="doc_shortcuts_title">Default Shortcuts</span></h2>
+        <p data-i="doc_shortcuts_desc">80+ shortcuts loaded on first launch. Type <span class="ic">list</span> inside ZER0 to see all of them.</p>
+        <h3 data-i="cat_pkg">Package Management</h3>
+        <table>
+          <tr><th data-i="th_shortcut">Shortcut</th><th data-i="th_command">Command</th></tr>
+          <tr><td>upd</td><td>sudo pacman -Syu</td></tr>
+          <tr><td>ins</td><td>sudo pacman -S</td></tr>
+          <tr><td>rem</td><td>sudo pacman -Rns</td></tr>
+          <tr><td>search</td><td>pacman -Ss</td></tr>
+          <tr><td>orphans</td><td>sudo pacman -Rns $(pacman -Qdtq)</td></tr>
+          <tr><td>unlock</td><td>sudo rm /var/lib/pacman/db.lck</td></tr>
+        </table>
+        <h3>Git</h3>
+        <table>
+          <tr><th data-i="th_shortcut">Shortcut</th><th data-i="th_command">Command</th></tr>
+          <tr><td>gs</td><td>git status</td></tr>
+          <tr><td>ga</td><td>git add .</td></tr>
+          <tr><td>gc</td><td>git commit -m</td></tr>
+          <tr><td>gp</td><td>git push</td></tr>
+          <tr><td>gpl</td><td>git pull</td></tr>
+          <tr><td>glog</td><td>git log --oneline --graph --decorate</td></tr>
+        </table>
+        <h3>Systemd</h3>
+        <table>
+          <tr><th data-i="th_shortcut">Shortcut</th><th data-i="th_command">Command</th></tr>
+          <tr><td>sstart</td><td>sudo systemctl start</td></tr>
+          <tr><td>sstop</td><td>sudo systemctl stop</td></tr>
+          <tr><td>srestart</td><td>sudo systemctl restart</td></tr>
+          <tr><td>sstatus</td><td>sudo systemctl status</td></tr>
+          <tr><td>slist</td><td>systemctl list-units --type=service</td></tr>
+        </table>
+        <h3>Docker</h3>
+        <table>
+          <tr><th data-i="th_shortcut">Shortcut</th><th data-i="th_command">Command</th></tr>
+          <tr><td>dps</td><td>docker ps</td></tr>
+          <tr><td>dcu</td><td>docker-compose up -d</td></tr>
+          <tr><td>dcd</td><td>docker-compose down</td></tr>
+          <tr><td>dlogs</td><td>docker logs -f</td></tr>
+          <tr><td>dprune</td><td>docker system prune -af</td></tr>
+        </table>
+        <p style="margin-top:1rem">→ <a href="https://github.com/LogLabsHQ/ZER0/wiki/Default-Shortcuts" target="_blank" style="color:var(--cyan);text-decoration:none" data-i="wiki_link">See all 80+ shortcuts in the Wiki ↗</a></p>
+      </section>
+
+      <section id="doc-config">
+        <h2>⚙️ <span data-i="doc_config_title">Configuration</span></h2>
+        <p data-i="doc_config_desc">ZER0 stores everything in <span class="ic">~/.config/zer0/config.json</span>. You can edit it manually.</p>
+        <div class="code-block">
+          <div class="code-header"><span>config.json</span></div>
+          <pre>{
+  "name": "YourName",
+  "lang": "en",
+  "aliases": {
+    "upd": "sudo pacman -Syu",
+    "gs":  "git status"
+  }
+}</pre>
+        </div>
+        <p data-i="doc_config_note"><span class="ic">lang</span> accepts <span class="ic">"en"</span> or <span class="ic">"es"</span>.</p>
+      </section>
+
+      <section id="doc-update">
+        <h2>🔄 <span data-i="doc_update_title">Update</span></h2>
+        <p data-i="doc_update_desc">When a new version is released:</p>
+        <div class="code-block">
+          <div class="code-header">
+            <span>bash</span>
+            <button class="copy-btn" onclick="copyCode(this,'update-code')" data-i="copy_btn">copy</button>
+          </div>
+          <pre id="update-code">cd ~/ZER0
+git pull
+./install.sh</pre>
+        </div>
+        <p data-i="doc_update_note">Your shortcuts, name and language are never touched by the installer.</p>
+      </section>
+
+      <section id="doc-uninstall">
+        <h2>🗑️ <span data-i="doc_uninstall_title">Uninstall</span></h2>
+        <div class="code-block">
+          <div class="code-header">
+            <span>bash</span>
+            <button class="copy-btn" onclick="copyCode(this,'uninstall-code')" data-i="copy_btn">copy</button>
+          </div>
+          <pre id="uninstall-code">rm -f ~/.local/bin/zero
+rm -rf ~/.config/zer0
+rm -rf ~/ZER0</pre>
+        </div>
+        <p data-i="doc_uninstall_note">Then remove the <span class="ic"># ─── ZER0 ───</span> block from your <span class="ic">.bashrc</span> / <span class="ic">.zshrc</span>.</p>
+      </section>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo"><span class="r">ZER</span><span class="d">0</span></div>
+  <p style="font-size:12px;color:var(--dim);margin-bottom:1rem" data-i="footer_desc">Command alias manager for Arch Linux</p>
+  <div class="footer-links">
+    <a href="https://github.com/LogLabsHQ/ZER0" target="_blank">GitHub</a>
+    <a href="https://github.com/LogLabsHQ/ZER0/wiki" target="_blank">Wiki</a>
+    <a href="https://github.com/LogLabsHQ/ZER0/issues" target="_blank" data-i="footer_issues">Issues</a>
+    <a href="https://github.com/LogLabsHQ/ZER0/blob/main/LICENSE" target="_blank">MIT License</a>
+    <a href="https://github.com/LogLabsHQ" target="_blank">LogLabs</a>
+  </div>
+  <p class="footer-copy">© 2026 LogLabs · MIT License</p>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Translations ─────────────────────────────────────────────────────────────
+const T = {
+  en: {
+    nav_install:"Install", nav_features:"Features", nav_docs:"Docs", nav_wiki:"Wiki",
+    hero_title:"Command alias manager<br>for <span class='accent'>Arch Linux</span>",
+    hero_sub:"Type less. Do more. 80+ built-in shortcuts. Interactive REPL session.",
+    badge_os:"Open Source",
+    btn_start:"→ Get started", btn_github:"⌥ View on GitHub",
+    term_install_comment:"Install ZER0", term_open_comment:"Open ZER0",
+    term_hello:"Hello", term_online:"is online", term_devby:"Developed by",
+    term_saved:"Shortcut saved",
+    sec_features:"features", sec_install:"installation", sec_docs:"documentation",
+    features_title:"Everything you need.<br>Nothing you don't.",
+    f1_title:"80+ Default shortcuts",
+    f1_desc:"Pacman, Git, Docker, Python, Node, Systemd, network and more — ready on first launch.",
+    f2_title:"Interactive REPL",
+    f2_desc:"Your own shell-like session with a custom <span class='ic'>[user@ZER0 ~]$</span> prompt.",
+    f3_title:"Bilingual",
+    f3_desc:"Full Spanish and English support. Choose at install time or switch live with <span class='ic'>lang</span>.",
+    f4_title:"Single file install",
+    f4_desc:"One <span class='ic'>install.sh</span> does everything. No extra dependencies.",
+    f5_title:"100% local",
+    f5_desc:"No telemetry. No accounts. No network calls. Your data stays on your machine.",
+    f6_title:"Colorful terminal UI",
+    f6_desc:"Styled banner, colored prompt, box UI and LogLabs branding. Built for Arch terminals.",
+    install_title:"Up and running<br>in 60 seconds",
+    step_clone:"Clone", step_install:"Install", step_open:"Reload and open",
+    install_note:"After install, ZER0 also responds to <span class='ic'>-Z</span> and <span class='ic'>$Z</span>.",
+    copy_btn:"copy",
+    docs_title:"Reference",
+    on_this_page:"On this page",
+    dnav_commands:"Internal Commands", dnav_shortcuts:"Default Shortcuts",
+    dnav_config:"Configuration", dnav_update:"Update", dnav_uninstall:"Uninstall",
+    doc_commands_title:"Internal Commands",
+    doc_commands_desc:"All commands available inside the ZER0 session. No prefix needed.",
+    th_command:"Command", th_aliases:"Aliases", th_desc:"Description",
+    th_shortcut:"Shortcut",
+    cmd_list:"List all saved shortcuts", cmd_add:"Add or update a shortcut",
+    cmd_rm:"Delete a shortcut", cmd_run:"Run a shortcut",
+    cmd_clear:"Clear screen and show banner", cmd_about:"Show info about ZER0",
+    cmd_lang:"Change language", cmd_help:"Show command list",
+    cmd_version:"Show current version", cmd_exit:"Exit ZER0",
+    doc_shortcuts_title:"Default Shortcuts",
+    doc_shortcuts_desc:"80+ shortcuts loaded on first launch. Type <span class='ic'>list</span> inside ZER0 to see all of them.",
+    cat_pkg:"Package Management",
+    wiki_link:"See all 80+ shortcuts in the Wiki ↗",
+    doc_config_title:"Configuration",
+    doc_config_desc:"ZER0 stores everything in <span class='ic'>~/.config/zer0/config.json</span>. You can edit it manually.",
+    doc_config_note:"<span class='ic'>lang</span> accepts <span class='ic'>\"en\"</span> or <span class='ic'>\"es\"</span>.",
+    doc_update_title:"Update",
+    doc_update_desc:"When a new version is released:",
+    doc_update_note:"Your shortcuts, name and language are never touched by the installer.",
+    doc_uninstall_title:"Uninstall",
+    doc_uninstall_note:"Then remove the <span class='ic'># ─── ZER0 ───</span> block from your <span class='ic'>.bashrc</span> / <span class='ic'>.zshrc</span>.",
+    footer_desc:"Command alias manager for Arch Linux",
+    footer_issues:"Issues",
+    toast_lang:"Language: English",
+  },
+  es: {
+    nav_install:"Instalar", nav_features:"Funciones", nav_docs:"Docs", nav_wiki:"Wiki",
+    hero_title:"Gestor de alias de comandos<br>para <span class='accent'>Arch Linux</span>",
+    hero_sub:"Escribe menos. Haz más. +80 atajos incluidos. Sesión REPL interactiva.",
+    badge_os:"Código abierto",
+    btn_start:"→ Empezar", btn_github:"⌥ Ver en GitHub",
+    term_install_comment:"Instalar ZER0", term_open_comment:"Abrir ZER0",
+    term_hello:"Hola", term_online:"está en línea", term_devby:"Desarrollado por",
+    term_saved:"Atajo guardado",
+    sec_features:"funciones", sec_install:"instalación", sec_docs:"documentación",
+    features_title:"Todo lo que necesitas.<br>Nada más.",
+    f1_title:"+80 atajos por defecto",
+    f1_desc:"Pacman, Git, Docker, Python, Node, Systemd, red y más — listos desde el primer inicio.",
+    f2_title:"REPL interactivo",
+    f2_desc:"Tu propia sesión de shell con prompt <span class='ic'>[usuario@ZER0 ~]$</span> personalizado.",
+    f3_title:"Bilingüe",
+    f3_desc:"Soporte completo en español e inglés. Elige al instalar o cambia en vivo con <span class='ic'>lang</span>.",
+    f4_title:"Instalación en un archivo",
+    f4_desc:"Un solo <span class='ic'>install.sh</span> lo hace todo. Sin dependencias extra.",
+    f5_title:"100% local",
+    f5_desc:"Sin telemetría. Sin cuentas. Sin llamadas de red. Tus datos se quedan en tu máquina.",
+    f6_title:"Interfaz de terminal colorida",
+    f6_desc:"Banner estilizado, prompt de colores, UI en cajas y branding de LogLabs. Hecho para Arch.",
+    install_title:"Listo en<br>60 segundos",
+    step_clone:"Clonar", step_install:"Instalar", step_open:"Recargar y abrir",
+    install_note:"Tras instalar, ZER0 también responde a <span class='ic'>-Z</span> y <span class='ic'>$Z</span>.",
+    copy_btn:"copiar",
+    docs_title:"Referencia",
+    on_this_page:"En esta página",
+    dnav_commands:"Comandos internos", dnav_shortcuts:"Atajos por defecto",
+    dnav_config:"Configuración", dnav_update:"Actualizar", dnav_uninstall:"Desinstalar",
+    doc_commands_title:"Comandos internos",
+    doc_commands_desc:"Todos los comandos disponibles dentro de la sesión de ZER0. Sin prefijo.",
+    th_command:"Comando", th_aliases:"Aliases", th_desc:"Descripción",
+    th_shortcut:"Atajo",
+    cmd_list:"Listar todos los atajos", cmd_add:"Agregar o actualizar un atajo",
+    cmd_rm:"Eliminar un atajo", cmd_run:"Ejecutar un atajo",
+    cmd_clear:"Limpiar pantalla y mostrar banner", cmd_about:"Mostrar info sobre ZER0",
+    cmd_lang:"Cambiar idioma", cmd_help:"Mostrar lista de comandos",
+    cmd_version:"Mostrar versión actual", cmd_exit:"Salir de ZER0",
+    doc_shortcuts_title:"Atajos por defecto",
+    doc_shortcuts_desc:"+80 atajos cargados en el primer inicio. Escribe <span class='ic'>list</span> dentro de ZER0 para verlos.",
+    cat_pkg:"Gestión de paquetes",
+    wiki_link:"Ver los +80 atajos en la Wiki ↗",
+    doc_config_title:"Configuración",
+    doc_config_desc:"ZER0 guarda todo en <span class='ic'>~/.config/zer0/config.json</span>. Puedes editarlo manualmente.",
+    doc_config_note:"<span class='ic'>lang</span> acepta <span class='ic'>\"en\"</span> o <span class='ic'>\"es\"</span>.",
+    doc_update_title:"Actualizar",
+    doc_update_desc:"Cuando salga una nueva versión:",
+    doc_update_note:"Tus atajos, nombre e idioma nunca son tocados por el instalador.",
+    doc_uninstall_title:"Desinstalar",
+    doc_uninstall_note:"Luego elimina el bloque <span class='ic'># ─── ZER0 ───</span> de tu <span class='ic'>.bashrc</span> / <span class='ic'>.zshrc</span>.",
+    footer_desc:"Gestor de alias de comandos para Arch Linux",
+    footer_issues:"Reportar bug",
+    toast_lang:"Idioma: Español",
+  }
+};
+
+let currentLang = localStorage.getItem('zer0_lang') || 'en';
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('zer0_lang', lang);
+
+  // Update all data-i elements
+  document.querySelectorAll('[data-i]').forEach(el => {
+    const key = el.getAttribute('data-i');
+    if (T[lang][key] !== undefined) el.innerHTML = T[lang][key];
+  });
+
+  // Update html lang attr
+  document.documentElement.lang = lang;
+
+  // Update title
+  document.title = lang === 'es'
+    ? 'ZER0 — Gestor de alias para Arch Linux'
+    : 'ZER0 — Command alias manager for Arch Linux';
+
+  // Update lang buttons
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent === lang.toUpperCase());
+  });
+
+  // Toast
+  showToast(T[lang].toast_lang);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function copyCode(btn, id) {
+  const text = document.getElementById(id).innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const copied = currentLang === 'es' ? '¡copiado!' : 'copied!';
+    btn.textContent = copied;
+    btn.classList.add('copied');
+    showToast(currentLang === 'es' ? '¡Copiado al portapapeles!' : 'Copied to clipboard!');
+    setTimeout(() => {
+      btn.innerHTML = T[currentLang].copy_btn;
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+// Active docs nav
+const sections = document.querySelectorAll('.docs-content section');
+sections.forEach(s => {
+  new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        document.querySelectorAll('.docs-nav a').forEach(a => a.classList.remove('active'));
+        const a = document.querySelector(`.docs-nav a[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { threshold: 0.3, rootMargin: '-60px 0px 0px 0px' }).observe(s);
+});
+
+// Init with saved lang
+setLang(currentLang);
+</script>
+</body>
+</html>

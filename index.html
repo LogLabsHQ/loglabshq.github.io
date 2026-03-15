@@ -3,577 +3,554 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ZER0 — Command alias manager for Arch Linux</title>
+<title>LogLabs — Software built different.</title>
+<meta name="description" content="LogLabs builds sharp, minimal developer tools. Open source and premium software for people who care about their workflow.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--red:#e03030;--red2:#ff4444;--orange:#e07020;--yellow:#d4b000;--cyan:#00d4ff;--green:#00e050;--bg:#0a0a0a;--bg2:#111111;--bg3:#181818;--bg4:#222222;--border:#2a2a2a;--dim:#555;--text:#ccc;--white:#f0f0f0}
+:root{--bg:#000;--bg2:#0a0a0a;--bg3:#111;--bg4:#1a1a1a;--border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.12);--dim:#6e6e73;--text:#a1a1a6;--white:#f5f5f7;--blue:#2997ff;--blue2:#0071e3;--purple:#bf5af2;--green:#30d158;--gold:#ff9f0a}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;line-height:1.7;overflow-x:hidden}
-body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.04) 2px,rgba(0,0,0,.04) 4px);pointer-events:none;z-index:1000}
-
-/* NAV */
-nav{position:fixed;top:0;left:0;right:0;height:48px;background:rgba(10,10,10,.92);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;z-index:100;backdrop-filter:blur(8px)}
-.nav-logo{font-family:'Space Mono',monospace;font-weight:700;font-size:15px;color:var(--red);letter-spacing:.1em;text-decoration:none}
-.nav-logo span{color:var(--dim)}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:17px;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+nav{position:fixed;top:0;left:0;right:0;height:48px;background:rgba(0,0,0,.72);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;z-index:200}
+.nav-brand{font-size:17px;font-weight:600;color:var(--white);text-decoration:none;letter-spacing:-.01em}
 .nav-links{display:flex;align-items:center;gap:1.5rem;list-style:none}
-.nav-links a{color:var(--dim);text-decoration:none;font-size:12px;letter-spacing:.05em;transition:color .2s}
-.nav-links a:hover{color:var(--cyan)}
-
-/* LANGUAGE TOGGLE */
-.lang-toggle{display:flex;align-items:center;gap:0;border:1px solid var(--border);border-radius:3px;overflow:hidden;background:var(--bg2)}
-.lang-btn{padding:4px 10px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;background:none;border:none;cursor:pointer;color:var(--dim);transition:all .2s;letter-spacing:.08em}
-.lang-btn.active{background:var(--red);color:#fff}
-.lang-btn:hover:not(.active){color:var(--white);background:var(--bg3)}
-.lang-divider{width:1px;height:20px;background:var(--border)}
-
-/* HERO */
-.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 2rem 4rem;position:relative;overflow:hidden}
-.hero::before{content:'';position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px;opacity:.3;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black,transparent)}
-.hero::after{content:'';position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(224,48,48,.08) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
-.hero-content{position:relative;z-index:1;text-align:center}
-.ascii-logo{font-family:'Space Mono',monospace;font-size:clamp(7px,1.5vw,13px);line-height:1.2;white-space:pre;margin-bottom:2.5rem;animation:fadeDown .8s ease both}
-.ascii-logo .r{color:var(--red)}.ascii-logo .o{color:var(--orange)}.ascii-logo .y{color:var(--yellow)}.ascii-logo .d{color:#333}
-.hero-tag{font-size:11px;color:var(--dim);letter-spacing:.2em;text-transform:uppercase;margin-bottom:1rem;animation:fadeDown .8s .1s ease both}
-.hero-title{font-family:'Space Mono',monospace;font-size:clamp(20px,4vw,36px);font-weight:700;color:var(--white);margin-bottom:.75rem;animation:fadeDown .8s .2s ease both}
-.hero-title .accent{color:var(--red)}
-.hero-sub{font-size:13px;color:var(--dim);margin-bottom:2.5rem;animation:fadeDown .8s .3s ease both}
-.badges{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;animation:fadeDown .8s .4s ease both}
-.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--border);border-radius:3px;font-size:11px;color:var(--dim);background:var(--bg2)}
-.badge .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
-.hero-buttons{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;animation:fadeDown .8s .5s ease both}
-.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;text-decoration:none;border-radius:3px;transition:all .2s;cursor:pointer;border:none}
-.btn-primary{background:var(--red);color:#fff}
-.btn-primary:hover{background:var(--red2);transform:translateY(-1px);box-shadow:0 4px 20px rgba(224,48,48,.4)}
-.btn-secondary{background:transparent;color:var(--text);border:1px solid var(--border)}
-.btn-secondary:hover{border-color:var(--cyan);color:var(--cyan);transform:translateY(-1px)}
-
-/* TERMINAL */
-.terminal-section{padding:4rem 2rem;max-width:800px;margin:0 auto}
-.terminal{background:var(--bg2);border:1px solid var(--border);border-radius:6px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6);animation:fadeUp .8s .6s ease both}
-.terminal-bar{background:var(--bg3);padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
-.t-dot{width:11px;height:11px;border-radius:50%}
-.t-dot.red{background:#ff5f57}.t-dot.yellow{background:#febc2e}.t-dot.green{background:#28c840}
-.t-title{margin:0 auto;font-size:11px;color:var(--dim);letter-spacing:.05em}
-.terminal-body{padding:1.5rem;font-size:13px;line-height:1.8}
-.t-comment{color:var(--dim)}.t-prompt{color:var(--green)}.t-cmd{color:var(--white)}.t-out{color:var(--cyan)}.t-success{color:var(--green)}
-.t-banner-r{color:var(--red)}.t-banner-o{color:var(--orange)}.t-banner-y{color:var(--yellow)}.t-banner-d{color:#2a2a2a}
-
-/* FEATURES */
-.features{padding:5rem 2rem;max-width:1100px;margin:0 auto}
-.section-label{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:.5rem}
-.section-title{font-family:'Space Mono',monospace;font-size:clamp(20px,3vw,28px);font-weight:700;color:var(--white);margin-bottom:3rem}
-.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:6px;overflow:hidden}
-.feature-card{background:var(--bg);padding:2rem;transition:background .2s}
-.feature-card:hover{background:var(--bg2)}
-.feature-icon{font-size:22px;margin-bottom:1rem}
-.feature-title{font-family:'Space Mono',monospace;font-size:14px;font-weight:700;color:var(--white);margin-bottom:.5rem}
-.feature-desc{font-size:12px;color:var(--dim);line-height:1.8}
-
-/* INSTALL */
-.install-section{padding:5rem 2rem;max-width:800px;margin:0 auto}
-.code-block{background:var(--bg2);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin:1.5rem 0}
-.code-header{background:var(--bg3);padding:8px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);font-size:11px;color:var(--dim)}
-.copy-btn{background:none;border:1px solid var(--border);color:var(--dim);font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 8px;border-radius:3px;cursor:pointer;transition:all .2s}
-.copy-btn:hover{border-color:var(--cyan);color:var(--cyan)}
-.copy-btn.copied{border-color:var(--green);color:var(--green)}
-pre{padding:1.25rem 1.5rem;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.8;overflow-x:auto;color:var(--text)}
-pre .c{color:var(--dim)}pre .k{color:var(--cyan)}
-
-/* DOCS */
-.docs-section{padding:5rem 2rem;max-width:1100px;margin:0 auto}
-.docs-grid{display:grid;grid-template-columns:240px 1fr;gap:3rem;align-items:start}
-.docs-nav{position:sticky;top:64px}
-.docs-nav-title{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);margin-bottom:.75rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)}
-.docs-nav ul{list-style:none}
-.docs-nav li{margin-bottom:2px}
-.docs-nav a{display:block;padding:5px 10px;font-size:12px;color:var(--dim);text-decoration:none;border-radius:3px;border-left:2px solid transparent;transition:all .15s}
-.docs-nav a:hover,.docs-nav a.active{color:var(--white);border-left-color:var(--red);background:var(--bg2);padding-left:12px}
-.docs-content section{margin-bottom:4rem;scroll-margin-top:64px}
-.docs-content h2{font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--white);margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)}
-.docs-content h3{font-size:13px;font-weight:700;color:var(--cyan);margin:1.5rem 0 .5rem;letter-spacing:.05em}
-.docs-content p{font-size:13px;color:var(--text);margin-bottom:1rem;line-height:1.8}
-ic{background:var(--bg3);border:1px solid var(--border);padding:1px 6px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--cyan)}
-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:12px}
-th{text-align:left;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);color:var(--dim);font-weight:400;letter-spacing:.05em;text-transform:uppercase;font-size:10px}
-td{padding:8px 12px;border:1px solid var(--border);color:var(--text)}
-td:first-child{color:var(--cyan);font-family:'JetBrains Mono',monospace;white-space:nowrap}
-tr:hover td{background:var(--bg2)}
-.ic{background:var(--bg3);border:1px solid var(--border);padding:1px 6px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--cyan);display:inline}
-
-/* FOOTER */
-footer{border-top:1px solid var(--border);padding:3rem 2rem;text-align:center}
-.footer-logo{font-family:'Space Mono',monospace;font-size:20px;font-weight:700;margin-bottom:.5rem}
-.footer-logo .r{color:var(--red)}.footer-logo .d{color:var(--dim)}
-.footer-links{display:flex;gap:1.5rem;justify-content:center;margin:1.5rem 0;flex-wrap:wrap}
-.footer-links a{color:var(--dim);text-decoration:none;font-size:12px;transition:color .2s}
-.footer-links a:hover{color:var(--cyan)}
-.footer-copy{font-size:11px;color:#333}
-
-/* TOAST */
-.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:10px 20px;font-size:12px;color:var(--cyan);z-index:9999;transition:transform .3s ease,opacity .3s ease;opacity:0;pointer-events:none}
-.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
-
-/* ANIMATIONS */
-@keyframes fadeDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
-@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.nav-links a{color:var(--dim);text-decoration:none;font-size:13px;transition:color .2s}
+.nav-links a:hover{color:var(--white)}
+.nav-pill{padding:5px 14px;background:var(--blue2);color:#fff!important;border-radius:20px;font-size:12px!important;font-weight:500!important}
+.nav-pill:hover{opacity:.85}
+.lang-toggle{display:flex;align-items:center;background:rgba(255,255,255,.06);border:1px solid var(--border2);border-radius:20px;padding:2px}
+.lang-btn{padding:3px 10px;font-family:'Inter',sans-serif;font-size:12px;font-weight:500;background:none;border:none;color:var(--dim);cursor:pointer;border-radius:20px;transition:all .2s}
+.lang-btn.active{background:var(--white);color:#000}
+.lang-btn:hover:not(.active){color:var(--white)}
+.lang-sep{width:1px;height:12px;background:var(--border2)}
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:120px 2rem 6rem;position:relative;overflow:hidden}
+.hero-glow{position:absolute;width:800px;height:800px;background:radial-gradient(circle,rgba(41,151,255,.08) 0%,rgba(191,90,242,.05) 50%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-55%);pointer-events:none}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--blue);letter-spacing:.05em;text-transform:uppercase;margin-bottom:1.5rem;animation:fadeUp .9s ease both}
+.hero-eyebrow-dot{width:4px;height:4px;border-radius:50%;background:var(--blue)}
+.hero-title{font-size:clamp(48px,7vw,96px);font-weight:700;color:var(--white);line-height:1.05;letter-spacing:-.04em;margin-bottom:1.5rem;animation:fadeUp .9s .1s ease both}
+.hero-title .grad{background:linear-gradient(135deg,#2997ff,#bf5af2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:clamp(17px,2vw,21px);font-weight:300;color:var(--text);max-width:600px;margin:0 auto 3rem;line-height:1.6;animation:fadeUp .9s .2s ease both}
+.hero-sub strong{color:var(--white);font-weight:400}
+.hero-actions{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;animation:fadeUp .9s .3s ease both}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:14px 30px;font-family:'Inter',sans-serif;font-size:15px;font-weight:500;text-decoration:none;border-radius:980px;transition:all .25s}
+.btn-primary{background:var(--blue2);color:#fff}
+.btn-primary:hover{background:#0077ed;transform:scale(1.02)}
+.btn-ghost{background:rgba(255,255,255,.08);color:var(--white);border:1px solid var(--border2)}
+.btn-ghost:hover{background:rgba(255,255,255,.12);transform:scale(1.02)}
+.hero-footnote{margin-top:5rem;font-size:12px;color:var(--dim);animation:fadeUp .9s .4s ease both}
+hr.div{border:none;border-top:1px solid var(--border);margin:0 2rem}
+.section{padding:100px 2rem;max-width:980px;margin:0 auto}
+.section-eyebrow{font-size:12px;font-weight:500;color:var(--blue);letter-spacing:.06em;text-transform:uppercase;margin-bottom:1rem}
+.section-title{font-size:clamp(32px,5vw,56px);font-weight:700;color:var(--white);line-height:1.07;letter-spacing:-.03em;margin-bottom:1rem}
+.section-sub{font-size:17px;font-weight:300;color:var(--text);max-width:600px;line-height:1.7}
+.section-sub strong{color:var(--white);font-weight:400}
+.bento{display:grid;gap:2px;background:var(--border);border-radius:18px;overflow:hidden;margin-top:4rem}
+.bento-2{grid-template-columns:1fr 1fr}
+.bento-item{background:var(--bg2);padding:2.5rem;transition:background .3s}
+.bento-item:hover{background:var(--bg3)}
+.bento-icon{font-size:32px;margin-bottom:1.5rem;display:block}
+.bento-title{font-size:19px;font-weight:600;color:var(--white);margin-bottom:.5rem;letter-spacing:-.02em}
+.bento-desc{font-size:14px;color:var(--dim);line-height:1.7}
+.bento-tag{display:inline-block;margin-top:1.25rem;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500}
+.tag-free{background:rgba(48,209,88,.1);color:var(--green);border:1px solid rgba(48,209,88,.2)}
+.tag-premium{background:rgba(255,159,10,.1);color:var(--gold);border:1px solid rgba(255,159,10,.2)}
+.about-split{display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:center;margin-top:5rem}
+.about-left p{font-size:17px;font-weight:300;color:var(--text);line-height:1.8;margin-bottom:1.5rem}
+.about-left p strong{color:var(--white);font-weight:400}
+.about-left .hl{color:var(--blue)}
+.about-left .hl-gold{color:var(--gold)}
+.about-card{background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:2rem;font-family:'SF Mono','JetBrains Mono',monospace;font-size:13px;line-height:1.9}
+.ac-bar{display:flex;gap:6px;margin-bottom:1.5rem}
+.ac-dot{width:12px;height:12px;border-radius:50%}
+.ac-r{background:#ff5f57}.ac-y{background:#febc2e}.ac-g{background:#28c840}
+.ac-prompt{color:var(--green)}.ac-cmd{color:var(--white)}.ac-out{color:var(--blue)}.ac-dim{color:var(--dim)}.ac-gold{color:var(--gold)}
+.ac-cursor::after{content:'▋';animation:blink 1s infinite;font-size:.85em;color:var(--blue)}
+.project-card{background:var(--bg2);border:1px solid var(--border);border-radius:18px;overflow:hidden;margin-top:4rem;transition:border-color .3s}
+.project-card:hover{border-color:var(--border2)}
+.project-top{padding:3.5rem 3.5rem 2rem;display:flex;justify-content:space-between;align-items:flex-start;gap:2rem}
+.project-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500;background:rgba(48,209,88,.1);border:1px solid rgba(48,209,88,.2);color:var(--green);margin-bottom:1.25rem}
+.project-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse-dot 1.5s infinite}
+.project-name{font-size:48px;font-weight:700;color:var(--white);letter-spacing:-.04em;margin-bottom:.75rem}
+.project-desc{font-size:17px;font-weight:300;color:var(--text);max-width:500px;line-height:1.7}
+.project-tags{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1.5rem}
+.ptag{padding:5px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;font-size:12px;color:var(--dim)}
+.project-links-col{display:flex;flex-direction:column;gap:.5rem;align-items:flex-end;flex-shrink:0}
+.p-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:980px;font-size:14px;font-weight:500;text-decoration:none;transition:all .2s;white-space:nowrap}
+.p-btn-primary{background:var(--blue2);color:#fff}
+.p-btn-primary:hover{background:#0077ed}
+.p-btn-ghost{background:rgba(255,255,255,.06);color:var(--white);border:1px solid var(--border2)}
+.p-btn-ghost:hover{background:rgba(255,255,255,.1)}
+.project-bottom{border-top:1px solid var(--border);padding:2rem 3.5rem;display:flex;gap:3rem}
+.proj-stat-num{font-size:28px;font-weight:700;color:var(--white);letter-spacing:-.03em;line-height:1}
+.proj-stat-label{font-size:12px;color:var(--dim);margin-top:4px}
+.roadmap-list{margin-top:4rem;display:flex;flex-direction:column;gap:1px;background:var(--border);border-radius:18px;overflow:hidden}
+.rm-item{background:var(--bg2);padding:2rem 2.5rem;display:flex;gap:2rem;align-items:flex-start;transition:background .2s}
+.rm-item:hover{background:var(--bg3)}
+.rm-indicator{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:2px;font-size:13px}
+.rm-done{background:rgba(48,209,88,.15);border:1px solid rgba(48,209,88,.3);color:var(--green)}
+.rm-active{background:rgba(41,151,255,.15);border:1px solid rgba(41,151,255,.3);color:var(--blue)}
+.rm-soon{background:var(--bg3);border:1px solid var(--border);color:var(--dim)}
+.rm-gold{background:rgba(255,159,10,.12);border:1px solid rgba(255,159,10,.25);color:var(--gold)}
+.rm-label{font-size:12px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;margin-bottom:.25rem}
+.rm-label-done{color:var(--green)}.rm-label-active{color:var(--blue)}.rm-label-soon{color:var(--dim)}.rm-label-gold{color:var(--gold)}
+.rm-title{font-size:17px;font-weight:600;color:var(--white);letter-spacing:-.02em;margin-bottom:.25rem}
+.rm-desc{font-size:14px;color:var(--dim);line-height:1.6}
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;background:var(--border);border-radius:18px;overflow:hidden;margin-top:4rem}
+.contact-card{background:var(--bg2);padding:2rem;text-decoration:none;display:block;transition:background .25s}
+.contact-card:hover{background:var(--bg3)}
+.contact-card-icon{font-size:22px;margin-bottom:1rem}
+.contact-card-title{font-size:17px;font-weight:600;color:var(--white);margin-bottom:.25rem;letter-spacing:-.02em}
+.contact-card:hover .contact-card-title{color:var(--blue)}
+.contact-card-handle{font-size:13px;color:var(--dim)}
+.contact-card-desc{font-size:12px;color:var(--dim);margin-top:.5rem;line-height:1.6}
+.blog-empty{background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:5rem 2rem;text-align:center;margin-top:4rem}
+.blog-empty-icon{font-size:40px;margin-bottom:1.5rem;display:block}
+.blog-empty-title{font-size:22px;font-weight:600;color:var(--white);margin-bottom:.75rem;letter-spacing:-.02em}
+.blog-empty-desc{font-size:15px;color:var(--dim);max-width:380px;margin:0 auto;line-height:1.7}
+.blog-empty-link{display:inline-block;margin-top:1.5rem;color:var(--blue);font-size:14px;text-decoration:none}
+.blog-empty-link:hover{text-decoration:underline}
+.footer-wrap{border-top:1px solid var(--border);padding:3rem 2rem}
+.footer-inner{max-width:980px;margin:0 auto;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:2rem}
+.footer-brand{font-size:13px;font-weight:500;color:var(--white)}
+.footer-brand p{color:var(--dim);font-size:12px;font-weight:400;margin-top:4px;line-height:1.6}
+.footer-cols{display:flex;gap:4rem}
+.footer-col-title{font-size:12px;font-weight:500;color:var(--white);margin-bottom:.75rem}
+.footer-col a{display:block;font-size:12px;color:var(--dim);text-decoration:none;margin-bottom:.4rem;transition:color .2s}
+.footer-col a:hover{color:var(--white)}
+.footer-bottom{max-width:980px;margin:2rem auto 0;padding-top:2rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.footer-copy{font-size:12px;color:var(--dim)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.3}}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-.cursor::after{content:'█';animation:blink 1s infinite;color:var(--red);font-size:.9em}
-
-/* RESPONSIVE */
-@media(max-width:900px){.docs-grid{grid-template-columns:1fr}.docs-nav{display:none}}
-@media(max-width:600px){.nav-links li:not(:last-child):not(:nth-last-child(2)){display:none}.hero-title{font-size:22px}}
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .8s ease,transform .8s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-delay-1{transition-delay:.1s}
+@media(max-width:768px){.about-split,.contact-grid,.bento-2,.project-top,.footer-cols{grid-template-columns:1fr;flex-direction:column}.nav-links li:not(:first-child):not(:last-child):not(:nth-last-child(2)){display:none}.project-name{font-size:36px}.project-bottom{gap:1.5rem}.footer-inner{flex-direction:column}}
 </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav>
-  <a class="nav-logo" href="#">ZER<span>0</span></a>
+  <a class="nav-brand" href="#">LogLabs</a>
   <ul class="nav-links">
-    <li><a href="#install"   data-i="nav_install">Install</a></li>
-    <li><a href="#features"  data-i="nav_features">Features</a></li>
-    <li><a href="#docs"      data-i="nav_docs">Docs</a></li>
-    <li><a href="https://github.com/LogLabsHQ/ZER0/wiki" target="_blank" data-i="nav_wiki">Wiki</a></li>
-    <li><a href="https://github.com/LogLabsHQ/ZER0"      target="_blank">GitHub ↗</a></li>
+    <li><a href="#about"    data-i="nav_about">About</a></li>
+    <li><a href="#software" data-i="nav_software">Software</a></li>
+    <li><a href="#projects" data-i="nav_projects">Projects</a></li>
+    <li><a href="#roadmap"  data-i="nav_roadmap">Roadmap</a></li>
+    <li><a href="#blog"     data-i="nav_blog">Blog</a></li>
+    <li><a href="#contact"  data-i="nav_contact">Contact</a></li>
+    <li><a href="https://github.com/LogLabsHQ" target="_blank" class="nav-pill">GitHub</a></li>
     <li>
       <div class="lang-toggle">
         <button class="lang-btn active" onclick="setLang('en')">EN</button>
-        <div class="lang-divider"></div>
-        <button class="lang-btn"       onclick="setLang('es')">ES</button>
+        <div class="lang-sep"></div>
+        <button class="lang-btn" onclick="setLang('es')">ES</button>
       </div>
     </li>
   </ul>
 </nav>
 
-<!-- HERO -->
 <section class="hero">
-  <div class="hero-content">
-    <pre class="ascii-logo"><span class="r">  ██████╗ ███████╗██████╗  ██████╗ </span>
-<span class="o">  ╚════██╗██╔════╝██╔══██╗██╔═████╗</span>
-<span class="y">   █████╔╝█████╗  ██████╔╝██║██╔██║</span>
-<span class="o">  ██╔═══╝ ██╔══╝  ██╔══██╗████╔╝██║</span>
-<span class="r">  ███████╗███████╗██║  ██║╚██████╔╝</span>
-<span class="d">  ╚══════╝╚══════╝╚═╝  ╚═╝ ╚═════╝ </span></pre>
-    <p class="hero-tag">v1.0.3 · Arch Linux · MIT License</p>
-    <h1 class="hero-title" data-i="hero_title">Command alias manager<br>for <span class="accent">Arch Linux</span></h1>
-    <p class="hero-sub" data-i="hero_sub">Type less. Do more. 80+ built-in shortcuts. Interactive REPL session.</p>
-    <div class="badges">
-      <span class="badge"><span class="dot"></span> Python 3.10+</span>
-      <span class="badge">bash / zsh / fish</span>
-      <span class="badge">MIT License</span>
-      <span class="badge" data-i="badge_os">Open Source</span>
+  <div class="hero-glow"></div>
+  <div class="hero-eyebrow"><div class="hero-eyebrow-dot"></div><span data-i="hero_eyebrow">Developer Tools &middot; Open Source &middot; Premium</span></div>
+  <h1 class="hero-title"><span data-i="hero_t1">Software built</span><br><span class="grad" data-i="hero_t2">different.</span></h1>
+  <p class="hero-sub"><strong>LogLabs</strong> <span data-i="hero_sub">builds sharp, minimal tools for developers who care about their workflow. Some free. Some premium. All obsessively crafted.</span></p>
+  <div class="hero-actions">
+    <a href="#projects" class="btn btn-primary" data-i="hero_cta1">Explore projects</a>
+    <a href="https://github.com/LogLabsHQ" target="_blank" class="btn btn-ghost">GitHub &nearr;</a>
+  </div>
+  <p class="hero-footnote" data-i="hero_note">Currently crafting tools for Arch Linux.</p>
+</section>
+
+<hr class="div">
+
+<section class="section" id="about">
+  <div class="reveal">
+    <div class="section-eyebrow" data-i="sec_about">About</div>
+    <h2 class="section-title" data-i="about_title">Built by developers,<br>for developers.</h2>
+  </div>
+  <div class="about-split">
+    <div class="about-left reveal">
+      <p data-i="about_p1"><strong>LogLabs</strong> is an independent software lab. We build tools for developers who live in the terminal and want their workflow to feel <span class="hl">precise and fast</span>.</p>
+      <p data-i="about_p2">We ship both <span class="hl">free open source</span> tools and <span class="hl-gold">premium software</span> &mdash; because great tooling deserves to be sustainable. Open source is at our core, but some projects will be paid products.</p>
+      <p data-i="about_p3">We target <strong>Arch Linux</strong> first. Not because it's the only platform that matters &mdash; but because users there demand quality, and quality travels.</p>
     </div>
-    <div class="hero-buttons">
-      <a href="#install" class="btn btn-primary"   data-i="btn_start">→ Get started</a>
-      <a href="https://github.com/LogLabsHQ/ZER0" target="_blank" class="btn btn-secondary" data-i="btn_github">⌥ View on GitHub</a>
+    <div class="about-card reveal reveal-delay-1">
+      <div class="ac-bar">
+        <div class="ac-dot ac-r"></div><div class="ac-dot ac-y"></div><div class="ac-dot ac-g"></div>
+      </div>
+      <div><span class="ac-dim"># <span data-i="m_file">manifesto.txt</span></span></div><br>
+      <div><span class="ac-out">&rarr; <span data-i="m1">Build sharp tools.</span></span></div>
+      <div><span class="ac-out">&rarr; <span data-i="m2">Obsess over details.</span></span></div>
+      <div><span class="ac-out">&rarr; <span data-i="m3">Respect the user's time.</span></span></div>
+      <div><span class="ac-out">&rarr; <span data-i="m4">Open source when possible.</span></span></div>
+      <div><span class="ac-gold">&rarr; <span data-i="m5">Premium when it makes sense.</span></span></div>
+      <div><span class="ac-out">&rarr; <span data-i="m6">Never add bloat.</span></span></div><br>
+      <div><span class="ac-prompt">$</span> <span class="ac-cursor"></span></div>
     </div>
   </div>
 </section>
 
-<!-- TERMINAL -->
-<div class="terminal-section">
-  <div class="terminal">
-    <div class="terminal-bar">
-      <div class="t-dot red"></div><div class="t-dot yellow"></div><div class="t-dot green"></div>
-      <span class="t-title">bash — youruser@arch</span>
+<hr class="div">
+
+<section class="section" id="software">
+  <div class="reveal">
+    <div class="section-eyebrow" data-i="sec_software">Software model</div>
+    <h2 class="section-title" data-i="soft_title">Free &amp; Premium.</h2>
+    <p class="section-sub" data-i="soft_sub">Some tools will always be free. Others will be premium products. Both are built with the same obsession.</p>
+  </div>
+  <div class="bento bento-2 reveal" style="margin-top:3rem">
+    <div class="bento-item">
+      <span class="bento-icon">&#x2B21;</span>
+      <div class="bento-title" data-i="tier1_title">Open Source</div>
+      <div class="bento-desc" data-i="tier1_desc">Core utilities that belong to the community. MIT licensed, forever free, open to contributions from anyone.</div>
+      <div style="margin-top:1.5rem;display:flex;flex-direction:column;gap:.4rem">
+        <div style="font-size:13px;color:var(--text)" data-i="t1f1">&#10003; &nbsp;MIT License</div>
+        <div style="font-size:13px;color:var(--text)" data-i="t1f2">&#10003; &nbsp;Public source code</div>
+        <div style="font-size:13px;color:var(--text)" data-i="t1f3">&#10003; &nbsp;Community contributions</div>
+        <div style="font-size:13px;color:var(--text)" data-i="t1f4">&#10003; &nbsp;Free forever</div>
+      </div>
+      <div><span class="bento-tag tag-free" data-i="tier1_tag">ZER0 is in this tier</span></div>
     </div>
-    <div class="terminal-body">
-      <div><span class="t-comment"># <span data-i="term_install_comment">Install ZER0</span></span></div>
-      <div><span class="t-prompt">$</span> <span class="t-cmd">git clone https://github.com/LogLabsHQ/ZER0.git && cd ZER0</span></div>
-      <div><span class="t-prompt">$</span> <span class="t-cmd">chmod +x install.sh && ./install.sh</span></div>
-      <br>
-      <div><span class="t-comment"># <span data-i="term_open_comment">Open ZER0</span></span></div>
-      <div><span class="t-prompt">$</span> <span class="t-cmd">zero</span></div>
-      <br>
-      <div class="t-banner-r">  ██████╗ ███████╗██████╗  ██████╗ </div>
-      <div class="t-banner-o">  ╚════██╗██╔════╝██╔══██╗██╔═████╗</div>
-      <div class="t-banner-y">   █████╔╝█████╗  ██████╔╝██║██╔██║</div>
-      <div class="t-banner-o">  ██╔═══╝ ██╔══╝  ██╔══██╗████╔╝██║</div>
-      <div class="t-banner-r">  ███████╗███████╗██║  ██║╚██████╔╝</div>
-      <br>
-      <div><span class="t-out">  <span data-i="term_hello">Hello</span>, Corona. ZER0 v1.0.3 <span data-i="term_online">is online</span>.</span></div>
-      <div><span class="t-out">  <span data-i="term_devby">Developed by</span>: LogLabs · https://github.com/LogLabsHQ</span></div>
-      <br>
-      <div><span class="t-prompt">[corona@ZER0 ~]$</span> <span class="t-cmd">upd</span></div>
-      <div><span class="t-comment">  → sudo pacman -Syu</span></div>
-      <div><span class="t-prompt">[corona@ZER0 ~]$</span> <span class="t-cmd">gs</span></div>
-      <div><span class="t-comment">  → git status</span></div>
-      <div><span class="t-prompt">[corona@ZER0 ~]$</span> <span class="t-cmd">add deploy "git push && ssh server ./deploy.sh"</span></div>
-      <div><span class="t-success">  ✔  <span data-i="term_saved">Shortcut saved</span>: deploy</span></div>
-      <br>
-      <div><span class="t-prompt">[corona@ZER0 ~]$</span> <span class="cursor"></span></div>
+    <div class="bento-item">
+      <span class="bento-icon">&#x25C8;</span>
+      <div class="bento-title" data-i="tier2_title">Premium</div>
+      <div class="bento-desc" data-i="tier2_desc">Advanced tools with deeper features, dedicated support and active development. Worth every cent.</div>
+      <div style="margin-top:1.5rem;display:flex;flex-direction:column;gap:.4rem">
+        <div style="font-size:13px;color:var(--text)" data-i="t2f1">&#10003; &nbsp;One-time or subscription pricing</div>
+        <div style="font-size:13px;color:var(--text)" data-i="t2f2">&#10003; &nbsp;Priority support</div>
+        <div style="font-size:13px;color:var(--text)" data-i="t2f3">&#10003; &nbsp;Advanced features</div>
+        <div style="font-size:13px;color:var(--text)" data-i="t2f4">&#10003; &nbsp;Funds continued development</div>
+      </div>
+      <div><span class="bento-tag tag-premium" data-i="tier2_tag">Coming in future releases</span></div>
     </div>
+  </div>
+</section>
+
+<hr class="div">
+
+<section class="section" id="projects">
+  <div class="reveal">
+    <div class="section-eyebrow" data-i="sec_projects">Projects</div>
+    <h2 class="section-title" data-i="proj_title">What we've built.</h2>
+  </div>
+  <div class="project-card reveal">
+    <div class="project-top">
+      <div>
+        <div class="project-badge" data-i="proj_live">Live</div>
+        <div class="project-name">ZER0</div>
+        <p class="project-desc" data-i="zer0_desc">Command alias manager for Arch Linux with an interactive REPL session. 80+ built-in shortcuts for pacman, git, docker, systemd, python and more. Bilingual. Single file install.</p>
+        <div class="project-tags">
+          <span class="ptag">Python</span><span class="ptag">Bash</span><span class="ptag">Arch Linux</span><span class="ptag">MIT License</span><span class="ptag">v1.0.3</span><span class="ptag" data-i="tag_free">Free</span>
+        </div>
+      </div>
+      <div class="project-links-col">
+        <a href="https://loglabshq.github.io/ZER0" target="_blank" class="p-btn p-btn-primary" data-i="zer0_visit">&#x2197; Visit site</a>
+        <a href="https://github.com/LogLabsHQ/ZER0" target="_blank" class="p-btn p-btn-ghost">GitHub</a>
+        <a href="https://github.com/LogLabsHQ/ZER0/wiki" target="_blank" class="p-btn p-btn-ghost">Wiki</a>
+      </div>
+    </div>
+    <div class="project-bottom">
+      <div><div class="proj-stat-num">80<span style="font-size:16px;color:var(--blue)">+</span></div><div class="proj-stat-label" data-i="stat1">Default shortcuts</div></div>
+      <div><div class="proj-stat-num" style="color:var(--green)" data-i="stat2_num">Free</div><div class="proj-stat-label" data-i="stat2">Always</div></div>
+      <div><div class="proj-stat-num">2</div><div class="proj-stat-label" data-i="stat3">Languages</div></div>
+      <div><div class="proj-stat-num">1</div><div class="proj-stat-label" data-i="stat4">File to install</div></div>
+    </div>
+  </div>
+</section>
+
+<hr class="div">
+
+<section class="section" id="roadmap">
+  <div class="reveal">
+    <div class="section-eyebrow" data-i="sec_roadmap">Roadmap</div>
+    <h2 class="section-title" data-i="rm_title">What's coming.</h2>
+  </div>
+  <div class="roadmap-list reveal">
+    <div class="rm-item">
+      <div class="rm-indicator rm-done">&#10003;</div>
+      <div>
+        <div class="rm-label rm-label-done" data-i="rm_done">Completed</div>
+        <div class="rm-title" data-i="rm1_title">ZER0 v1.0 &mdash; Core release</div>
+        <div class="rm-desc" data-i="rm1_desc">Interactive REPL, 80+ default shortcuts, bilingual support, single file installer, GitHub Pages site.</div>
+      </div>
+    </div>
+    <div class="rm-item">
+      <div class="rm-indicator rm-active">&rarr;</div>
+      <div>
+        <div class="rm-label rm-label-active" data-i="rm_active">In progress</div>
+        <div class="rm-title" data-i="rm2_title">ZER0 &mdash; Documentation &amp; web presence</div>
+        <div class="rm-desc" data-i="rm2_desc">Full Wiki, LogLabs org site, improved onboarding experience.</div>
+      </div>
+    </div>
+    <div class="rm-item">
+      <div class="rm-indicator rm-soon">&#9675;</div>
+      <div>
+        <div class="rm-label rm-label-soon" data-i="rm_pfree">Planned &middot; Free</div>
+        <div class="rm-title" data-i="rm3_title">ZER0 v2.0 &mdash; Plugin system</div>
+        <div class="rm-desc" data-i="rm3_desc">Shareable shortcut packs, community alias collections, auto-update command.</div>
+      </div>
+    </div>
+    <div class="rm-item">
+      <div class="rm-indicator rm-gold">&#x25C8;</div>
+      <div>
+        <div class="rm-label rm-label-gold" data-i="rm_pprem">Planned &middot; Premium</div>
+        <div class="rm-title" data-i="rm4_title">New project &mdash; TBD</div>
+        <div class="rm-desc" data-i="rm4_desc">Something more advanced is in the works. Follow on GitHub and X to be the first to know.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="div">
+
+<section class="section" id="blog">
+  <div class="reveal">
+    <div class="section-eyebrow" data-i="sec_blog">Blog</div>
+    <h2 class="section-title" data-i="blog_title">From the lab.</h2>
+  </div>
+  <div class="blog-empty reveal">
+    <span class="blog-empty-icon">&#128225;</span>
+    <div class="blog-empty-title" data-i="blog_et">Posts incoming</div>
+    <div class="blog-empty-desc" data-i="blog_ed">We'll write about open source tooling, Arch Linux, terminal UX, and the building process behind LogLabs projects.</div>
+    <a href="https://x.com/LogLabsHQ" target="_blank" class="blog-empty-link" data-i="blog_follow">Follow @LogLabsHQ on X for updates &rarr;</a>
+  </div>
+</section>
+
+<hr class="div">
+
+<section class="section" id="contact">
+  <div class="reveal">
+    <div class="section-eyebrow" data-i="sec_contact">Contact</div>
+    <h2 class="section-title" data-i="ct_title">Get in touch.</h2>
+    <p class="section-sub" data-i="ct_sub">We have different channels depending on what you need. Pick the right one.</p>
+  </div>
+  <div class="contact-grid reveal">
+    <a href="https://github.com/LogLabsHQ" target="_blank" class="contact-card">
+      <div class="contact-card-icon">&#8997;</div>
+      <div class="contact-card-title" data-i="cc1t">GitHub</div>
+      <div class="contact-card-handle">github.com/LogLabsHQ</div>
+      <div class="contact-card-desc" data-i="cc1d">For bug reports, feature requests and contributions. Best place for project-related discussions.</div>
+    </a>
+    <a href="https://x.com/LogLabsHQ" target="_blank" class="contact-card">
+      <div class="contact-card-icon">&#x1D54F;</div>
+      <div class="contact-card-title" data-i="cc2t">&#x1D54F; (Twitter)</div>
+      <div class="contact-card-handle">@LogLabsHQ</div>
+      <div class="contact-card-desc" data-i="cc2d">Announcements, updates and general conversation. Follow to stay in the loop.</div>
+    </a>
+    <a href="mailto:LogLabs@linuxmail.org" class="contact-card">
+      <div class="contact-card-icon">&#x1F427;</div>
+      <div class="contact-card-title" data-i="cc3t">Linux Support</div>
+      <div class="contact-card-handle">LogLabs@linuxmail.org</div>
+      <div class="contact-card-desc" data-i="cc3d">Support for all LogLabs tools built for Linux.</div>
+    </a>
+    <a href="mailto:ZER0@linuxmail.org" class="contact-card">
+      <div class="contact-card-icon">&#9889;</div>
+      <div class="contact-card-title" data-i="cc4t">ZER0 Support</div>
+      <div class="contact-card-handle">ZER0@linuxmail.org</div>
+      <div class="contact-card-desc" data-i="cc4d">Direct support channel for ZER0 users.</div>
+    </a>
+    <a href="mailto:LogLabs@programmer.net" class="contact-card">
+      <div class="contact-card-icon">&#9000;</div>
+      <div class="contact-card-title" data-i="cc5t">Technical Support</div>
+      <div class="contact-card-handle">LogLabs@programmer.net</div>
+      <div class="contact-card-desc" data-i="cc5d">Deep technical questions, integration issues and developer-to-developer support.</div>
+    </a>
+    <a href="mailto:LogLabs@consultant.com" class="contact-card">
+      <div class="contact-card-icon">&#9678;</div>
+      <div class="contact-card-title" data-i="cc6t">General &amp; Business</div>
+      <div class="contact-card-handle">LogLabs@consultant.com</div>
+      <div class="contact-card-desc" data-i="cc6d">General inquiries, business and premium product questions.</div>
+    </a>
+  </div>
+</section>
+
+<div class="footer-wrap">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      LogLabs
+      <p data-i="footer_tagline">Independent software lab.<br>Open source &amp; premium tools.</p>
+    </div>
+    <div class="footer-cols">
+      <div class="footer-col">
+        <div class="footer-col-title" data-i="f_proj">Projects</div>
+        <a href="https://loglabshq.github.io/ZER0" target="_blank">ZER0</a>
+        <a href="https://github.com/LogLabsHQ/ZER0/wiki" target="_blank">ZER0 Wiki</a>
+        <a href="https://github.com/LogLabsHQ/ZER0" target="_blank">GitHub</a>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title" data-i="f_conn">Connect</div>
+        <a href="https://github.com/LogLabsHQ" target="_blank">GitHub Org</a>
+        <a href="https://x.com/LogLabsHQ" target="_blank">&#x1D54F; @LogLabsHQ</a>
+        <a href="mailto:LogLabs@consultant.com" data-i="f_email">Email</a>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title" data-i="f_supp">Support</div>
+        <a href="mailto:ZER0@linuxmail.org">ZER0 Support</a>
+        <a href="mailto:LogLabs@programmer.net" data-i="f_tech">Technical</a>
+        <a href="https://github.com/LogLabsHQ/ZER0/issues" target="_blank" data-i="f_issues">Issues</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy" data-i="f_copy">&copy; 2026 LogLabs. Open source &amp; premium software.</div>
+    <div class="footer-copy">Arch Linux &middot; Python &middot; Bash</div>
   </div>
 </div>
 
-<!-- FEATURES -->
-<section class="features" id="features">
-  <p class="section-label">// <span data-i="sec_features">features</span></p>
-  <h2 class="section-title" data-i="features_title">Everything you need.<br>Nothing you don't.</h2>
-  <div class="features-grid">
-    <div class="feature-card"><div class="feature-icon">⚡</div><div class="feature-title" data-i="f1_title">80+ Default shortcuts</div><p class="feature-desc" data-i="f1_desc">Pacman, Git, Docker, Python, Node, Systemd, network and more — ready on first launch.</p></div>
-    <div class="feature-card"><div class="feature-icon">🖥️</div><div class="feature-title" data-i="f2_title">Interactive REPL</div><p class="feature-desc" data-i="f2_desc">Your own shell-like session with a custom <span class="ic">[user@ZER0 ~]$</span> prompt.</p></div>
-    <div class="feature-card"><div class="feature-icon">🌐</div><div class="feature-title" data-i="f3_title">Bilingual</div><p class="feature-desc" data-i="f3_desc">Full Spanish and English support. Choose at install time or switch live with <span class="ic">lang</span>.</p></div>
-    <div class="feature-card"><div class="feature-icon">📦</div><div class="feature-title" data-i="f4_title">Single file install</div><p class="feature-desc" data-i="f4_desc">One <span class="ic">install.sh</span> does everything. No extra dependencies.</p></div>
-    <div class="feature-card"><div class="feature-icon">🔒</div><div class="feature-title" data-i="f5_title">100% local</div><p class="feature-desc" data-i="f5_desc">No telemetry. No accounts. No network calls. Your data stays on your machine.</p></div>
-    <div class="feature-card"><div class="feature-icon">🎨</div><div class="feature-title" data-i="f6_title">Colorful terminal UI</div><p class="feature-desc" data-i="f6_desc">Styled banner, colored prompt, box UI and LogLabs branding. Built for Arch terminals.</p></div>
-  </div>
-</section>
-
-<!-- INSTALL -->
-<section class="install-section" id="install">
-  <p class="section-label">// <span data-i="sec_install">installation</span></p>
-  <h2 class="section-title" data-i="install_title">Up and running<br>in 60 seconds</h2>
-  <div class="code-block">
-    <div class="code-header">
-      <span>bash</span>
-      <button class="copy-btn" onclick="copyCode(this,'install-code')" data-i="copy_btn">copy</button>
-    </div>
-    <pre id="install-code"><span class="c"># 1. <span data-i="step_clone">Clone</span></span>
-<span class="k">git clone</span> https://github.com/LogLabsHQ/ZER0.git
-<span class="k">cd</span> ZER0
-
-<span class="c"># 2. <span data-i="step_install">Install</span></span>
-<span class="k">chmod</span> +x install.sh &amp;&amp; ./install.sh
-
-<span class="c"># 3. <span data-i="step_open">Reload and open</span></span>
-<span class="k">source</span> ~/.bashrc
-zero</pre>
-  </div>
-  <p style="font-size:12px;color:var(--dim)" data-i="install_note">After install, ZER0 also responds to <span class="ic">-Z</span> and <span class="ic">$Z</span>.</p>
-</section>
-
-<!-- DOCS -->
-<section class="docs-section" id="docs">
-  <p class="section-label">// <span data-i="sec_docs">documentation</span></p>
-  <h2 class="section-title" data-i="docs_title">Reference</h2>
-  <div class="docs-grid">
-    <nav class="docs-nav">
-      <div class="docs-nav-title" data-i="on_this_page">On this page</div>
-      <ul>
-        <li><a href="#doc-commands" data-i="dnav_commands">Internal Commands</a></li>
-        <li><a href="#doc-shortcuts" data-i="dnav_shortcuts">Default Shortcuts</a></li>
-        <li><a href="#doc-config" data-i="dnav_config">Configuration</a></li>
-        <li><a href="#doc-update" data-i="dnav_update">Update</a></li>
-        <li><a href="#doc-uninstall" data-i="dnav_uninstall">Uninstall</a></li>
-      </ul>
-    </nav>
-    <div class="docs-content">
-
-      <section id="doc-commands">
-        <h2>💻 <span data-i="doc_commands_title">Internal Commands</span></h2>
-        <p data-i="doc_commands_desc">All commands available inside the ZER0 session. No prefix needed.</p>
-        <table>
-          <tr><th data-i="th_command">Command</th><th data-i="th_aliases">Aliases</th><th data-i="th_desc">Description</th></tr>
-          <tr><td>list</td><td>ls, -l</td><td data-i="cmd_list">List all saved shortcuts</td></tr>
-          <tr><td>add &lt;shortcut&gt; &lt;cmd&gt;</td><td>a</td><td data-i="cmd_add">Add or update a shortcut</td></tr>
-          <tr><td>rm &lt;shortcut&gt;</td><td>remove, del</td><td data-i="cmd_rm">Delete a shortcut</td></tr>
-          <tr><td>&lt;shortcut&gt; [args…]</td><td>—</td><td data-i="cmd_run">Run a shortcut</td></tr>
-          <tr><td>clear</td><td>cls, c</td><td data-i="cmd_clear">Clear screen and show banner</td></tr>
-          <tr><td>about</td><td>—</td><td data-i="cmd_about">Show info about ZER0</td></tr>
-          <tr><td>lang</td><td>—</td><td data-i="cmd_lang">Change language</td></tr>
-          <tr><td>help</td><td>--help, -h</td><td data-i="cmd_help">Show command list</td></tr>
-          <tr><td>version</td><td>-v</td><td data-i="cmd_version">Show current version</td></tr>
-          <tr><td>exit</td><td>quit, q, Ctrl+C</td><td data-i="cmd_exit">Exit ZER0</td></tr>
-        </table>
-      </section>
-
-      <section id="doc-shortcuts">
-        <h2>⚡ <span data-i="doc_shortcuts_title">Default Shortcuts</span></h2>
-        <p data-i="doc_shortcuts_desc">80+ shortcuts loaded on first launch. Type <span class="ic">list</span> inside ZER0 to see all of them.</p>
-        <h3 data-i="cat_pkg">Package Management</h3>
-        <table>
-          <tr><th data-i="th_shortcut">Shortcut</th><th data-i="th_command">Command</th></tr>
-          <tr><td>upd</td><td>sudo pacman -Syu</td></tr>
-          <tr><td>ins</td><td>sudo pacman -S</td></tr>
-          <tr><td>rem</td><td>sudo pacman -Rns</td></tr>
-          <tr><td>search</td><td>pacman -Ss</td></tr>
-          <tr><td>orphans</td><td>sudo pacman -Rns $(pacman -Qdtq)</td></tr>
-          <tr><td>unlock</td><td>sudo rm /var/lib/pacman/db.lck</td></tr>
-        </table>
-        <h3>Git</h3>
-        <table>
-          <tr><th data-i="th_shortcut">Shortcut</th><th data-i="th_command">Command</th></tr>
-          <tr><td>gs</td><td>git status</td></tr>
-          <tr><td>ga</td><td>git add .</td></tr>
-          <tr><td>gc</td><td>git commit -m</td></tr>
-          <tr><td>gp</td><td>git push</td></tr>
-          <tr><td>gpl</td><td>git pull</td></tr>
-          <tr><td>glog</td><td>git log --oneline --graph --decorate</td></tr>
-        </table>
-        <h3>Systemd</h3>
-        <table>
-          <tr><th data-i="th_shortcut">Shortcut</th><th data-i="th_command">Command</th></tr>
-          <tr><td>sstart</td><td>sudo systemctl start</td></tr>
-          <tr><td>sstop</td><td>sudo systemctl stop</td></tr>
-          <tr><td>srestart</td><td>sudo systemctl restart</td></tr>
-          <tr><td>sstatus</td><td>sudo systemctl status</td></tr>
-          <tr><td>slist</td><td>systemctl list-units --type=service</td></tr>
-        </table>
-        <h3>Docker</h3>
-        <table>
-          <tr><th data-i="th_shortcut">Shortcut</th><th data-i="th_command">Command</th></tr>
-          <tr><td>dps</td><td>docker ps</td></tr>
-          <tr><td>dcu</td><td>docker-compose up -d</td></tr>
-          <tr><td>dcd</td><td>docker-compose down</td></tr>
-          <tr><td>dlogs</td><td>docker logs -f</td></tr>
-          <tr><td>dprune</td><td>docker system prune -af</td></tr>
-        </table>
-        <p style="margin-top:1rem">→ <a href="https://github.com/LogLabsHQ/ZER0/wiki/Default-Shortcuts" target="_blank" style="color:var(--cyan);text-decoration:none" data-i="wiki_link">See all 80+ shortcuts in the Wiki ↗</a></p>
-      </section>
-
-      <section id="doc-config">
-        <h2>⚙️ <span data-i="doc_config_title">Configuration</span></h2>
-        <p data-i="doc_config_desc">ZER0 stores everything in <span class="ic">~/.config/zer0/config.json</span>. You can edit it manually.</p>
-        <div class="code-block">
-          <div class="code-header"><span>config.json</span></div>
-          <pre>{
-  "name": "YourName",
-  "lang": "en",
-  "aliases": {
-    "upd": "sudo pacman -Syu",
-    "gs":  "git status"
-  }
-}</pre>
-        </div>
-        <p data-i="doc_config_note"><span class="ic">lang</span> accepts <span class="ic">"en"</span> or <span class="ic">"es"</span>.</p>
-      </section>
-
-      <section id="doc-update">
-        <h2>🔄 <span data-i="doc_update_title">Update</span></h2>
-        <p data-i="doc_update_desc">When a new version is released:</p>
-        <div class="code-block">
-          <div class="code-header">
-            <span>bash</span>
-            <button class="copy-btn" onclick="copyCode(this,'update-code')" data-i="copy_btn">copy</button>
-          </div>
-          <pre id="update-code">cd ~/ZER0
-git pull
-./install.sh</pre>
-        </div>
-        <p data-i="doc_update_note">Your shortcuts, name and language are never touched by the installer.</p>
-      </section>
-
-      <section id="doc-uninstall">
-        <h2>🗑️ <span data-i="doc_uninstall_title">Uninstall</span></h2>
-        <div class="code-block">
-          <div class="code-header">
-            <span>bash</span>
-            <button class="copy-btn" onclick="copyCode(this,'uninstall-code')" data-i="copy_btn">copy</button>
-          </div>
-          <pre id="uninstall-code">rm -f ~/.local/bin/zero
-rm -rf ~/.config/zer0
-rm -rf ~/ZER0</pre>
-        </div>
-        <p data-i="doc_uninstall_note">Then remove the <span class="ic"># ─── ZER0 ───</span> block from your <span class="ic">.bashrc</span> / <span class="ic">.zshrc</span>.</p>
-      </section>
-
-    </div>
-  </div>
-</section>
-
-<!-- FOOTER -->
-<footer>
-  <div class="footer-logo"><span class="r">ZER</span><span class="d">0</span></div>
-  <p style="font-size:12px;color:var(--dim);margin-bottom:1rem" data-i="footer_desc">Command alias manager for Arch Linux</p>
-  <div class="footer-links">
-    <a href="https://github.com/LogLabsHQ/ZER0" target="_blank">GitHub</a>
-    <a href="https://github.com/LogLabsHQ/ZER0/wiki" target="_blank">Wiki</a>
-    <a href="https://github.com/LogLabsHQ/ZER0/issues" target="_blank" data-i="footer_issues">Issues</a>
-    <a href="https://github.com/LogLabsHQ/ZER0/blob/main/LICENSE" target="_blank">MIT License</a>
-    <a href="https://github.com/LogLabsHQ" target="_blank">LogLabs</a>
-  </div>
-  <p class="footer-copy">© 2026 LogLabs · MIT License</p>
-</footer>
-
-<div class="toast" id="toast"></div>
-
 <script>
-// ── Translations ─────────────────────────────────────────────────────────────
 const T = {
   en: {
-    nav_install:"Install", nav_features:"Features", nav_docs:"Docs", nav_wiki:"Wiki",
-    hero_title:"Command alias manager<br>for <span class='accent'>Arch Linux</span>",
-    hero_sub:"Type less. Do more. 80+ built-in shortcuts. Interactive REPL session.",
-    badge_os:"Open Source",
-    btn_start:"→ Get started", btn_github:"⌥ View on GitHub",
-    term_install_comment:"Install ZER0", term_open_comment:"Open ZER0",
-    term_hello:"Hello", term_online:"is online", term_devby:"Developed by",
-    term_saved:"Shortcut saved",
-    sec_features:"features", sec_install:"installation", sec_docs:"documentation",
-    features_title:"Everything you need.<br>Nothing you don't.",
-    f1_title:"80+ Default shortcuts",
-    f1_desc:"Pacman, Git, Docker, Python, Node, Systemd, network and more — ready on first launch.",
-    f2_title:"Interactive REPL",
-    f2_desc:"Your own shell-like session with a custom <span class='ic'>[user@ZER0 ~]$</span> prompt.",
-    f3_title:"Bilingual",
-    f3_desc:"Full Spanish and English support. Choose at install time or switch live with <span class='ic'>lang</span>.",
-    f4_title:"Single file install",
-    f4_desc:"One <span class='ic'>install.sh</span> does everything. No extra dependencies.",
-    f5_title:"100% local",
-    f5_desc:"No telemetry. No accounts. No network calls. Your data stays on your machine.",
-    f6_title:"Colorful terminal UI",
-    f6_desc:"Styled banner, colored prompt, box UI and LogLabs branding. Built for Arch terminals.",
-    install_title:"Up and running<br>in 60 seconds",
-    step_clone:"Clone", step_install:"Install", step_open:"Reload and open",
-    install_note:"After install, ZER0 also responds to <span class='ic'>-Z</span> and <span class='ic'>$Z</span>.",
-    copy_btn:"copy",
-    docs_title:"Reference",
-    on_this_page:"On this page",
-    dnav_commands:"Internal Commands", dnav_shortcuts:"Default Shortcuts",
-    dnav_config:"Configuration", dnav_update:"Update", dnav_uninstall:"Uninstall",
-    doc_commands_title:"Internal Commands",
-    doc_commands_desc:"All commands available inside the ZER0 session. No prefix needed.",
-    th_command:"Command", th_aliases:"Aliases", th_desc:"Description",
-    th_shortcut:"Shortcut",
-    cmd_list:"List all saved shortcuts", cmd_add:"Add or update a shortcut",
-    cmd_rm:"Delete a shortcut", cmd_run:"Run a shortcut",
-    cmd_clear:"Clear screen and show banner", cmd_about:"Show info about ZER0",
-    cmd_lang:"Change language", cmd_help:"Show command list",
-    cmd_version:"Show current version", cmd_exit:"Exit ZER0",
-    doc_shortcuts_title:"Default Shortcuts",
-    doc_shortcuts_desc:"80+ shortcuts loaded on first launch. Type <span class='ic'>list</span> inside ZER0 to see all of them.",
-    cat_pkg:"Package Management",
-    wiki_link:"See all 80+ shortcuts in the Wiki ↗",
-    doc_config_title:"Configuration",
-    doc_config_desc:"ZER0 stores everything in <span class='ic'>~/.config/zer0/config.json</span>. You can edit it manually.",
-    doc_config_note:"<span class='ic'>lang</span> accepts <span class='ic'>\"en\"</span> or <span class='ic'>\"es\"</span>.",
-    doc_update_title:"Update",
-    doc_update_desc:"When a new version is released:",
-    doc_update_note:"Your shortcuts, name and language are never touched by the installer.",
-    doc_uninstall_title:"Uninstall",
-    doc_uninstall_note:"Then remove the <span class='ic'># ─── ZER0 ───</span> block from your <span class='ic'>.bashrc</span> / <span class='ic'>.zshrc</span>.",
-    footer_desc:"Command alias manager for Arch Linux",
-    footer_issues:"Issues",
-    toast_lang:"Language: English",
+    nav_about:"About", nav_software:"Software", nav_projects:"Projects",
+    nav_roadmap:"Roadmap", nav_blog:"Blog", nav_contact:"Contact",
+    hero_eyebrow:"Developer Tools \u00b7 Open Source \u00b7 Premium",
+    hero_t1:"Software built", hero_t2:"different.",
+    hero_sub:"builds sharp, minimal tools for developers who care about their workflow. Some free. Some premium. All obsessively crafted.",
+    hero_cta1:"Explore projects", hero_note:"Currently crafting tools for Arch Linux.",
+    sec_about:"About", sec_software:"Software model", sec_projects:"Projects",
+    sec_roadmap:"Roadmap", sec_blog:"Blog", sec_contact:"Contact",
+    about_title:"Built by developers,<br>for developers.",
+    about_p1:"<strong>LogLabs</strong> is an independent software lab. We build tools for developers who live in the terminal and want their workflow to feel <span class='hl'>precise and fast</span>.",
+    about_p2:"We ship both <span class='hl'>free open source</span> tools and <span class='hl-gold'>premium software</span> \u2014 because great tooling deserves to be sustainable. Open source is at our core, but some projects will be paid products.",
+    about_p3:"We target <strong>Arch Linux</strong> first. Not because it's the only platform that matters \u2014 but because users there demand quality, and quality travels.",
+    m_file:"manifesto.txt",
+    m1:"Build sharp tools.", m2:"Obsess over details.", m3:"Respect the user's time.",
+    m4:"Open source when possible.", m5:"Premium when it makes sense.", m6:"Never add bloat.",
+    soft_title:"Free & Premium.",
+    soft_sub:"Some tools will always be free. Others will be premium products. Both are built with the same obsession.",
+    tier1_title:"Open Source", tier2_title:"Premium",
+    tier1_desc:"Core utilities that belong to the community. MIT licensed, forever free, open to contributions from anyone.",
+    tier2_desc:"Advanced tools with deeper features, dedicated support and active development. Worth every cent.",
+    t1f1:"\u2713 \u00a0MIT License", t1f2:"\u2713 \u00a0Public source code", t1f3:"\u2713 \u00a0Community contributions", t1f4:"\u2713 \u00a0Free forever",
+    t2f1:"\u2713 \u00a0One-time or subscription pricing", t2f2:"\u2713 \u00a0Priority support", t2f3:"\u2713 \u00a0Advanced features", t2f4:"\u2713 \u00a0Funds continued development",
+    tier1_tag:"ZER0 is in this tier", tier2_tag:"Coming in future releases",
+    sec_projects:"Projects", proj_title:"What we've built.", proj_live:"Live", tag_free:"Free",
+    zer0_desc:"Command alias manager for Arch Linux with an interactive REPL session. 80+ built-in shortcuts for pacman, git, docker, systemd, python and more. Bilingual. Single file install.",
+    zer0_visit:"\u2197 Visit site",
+    stat1:"Default shortcuts", stat2_num:"Free", stat2:"Always", stat3:"Languages", stat4:"File to install",
+    rm_title:"What's coming.", rm_done:"Completed", rm_active:"In progress",
+    rm_pfree:"Planned \u00b7 Free", rm_pprem:"Planned \u00b7 Premium",
+    rm1_title:"ZER0 v1.0 \u2014 Core release",
+    rm1_desc:"Interactive REPL, 80+ default shortcuts, bilingual support, single file installer, GitHub Pages site.",
+    rm2_title:"ZER0 \u2014 Documentation & web presence",
+    rm2_desc:"Full Wiki, LogLabs org site, improved onboarding experience.",
+    rm3_title:"ZER0 v2.0 \u2014 Plugin system",
+    rm3_desc:"Shareable shortcut packs, community alias collections, auto-update command.",
+    rm4_title:"New project \u2014 TBD",
+    rm4_desc:"Something more advanced is in the works. Follow on GitHub and X to be the first to know.",
+    blog_title:"From the lab.", blog_et:"Posts incoming",
+    blog_ed:"We'll write about open source tooling, Arch Linux, terminal UX, and the building process behind LogLabs projects.",
+    blog_follow:"Follow @LogLabsHQ on X for updates \u2192",
+    ct_title:"Get in touch.",
+    ct_sub:"We have different channels depending on what you need. Pick the right one.",
+    cc1t:"GitHub", cc2t:"\u{1D54F} (Twitter)", cc3t:"Linux Support",
+    cc4t:"ZER0 Support", cc5t:"Technical Support", cc6t:"General & Business",
+    cc1d:"For bug reports, feature requests and contributions. Best place for project-related discussions.",
+    cc2d:"Announcements, updates and general conversation. Follow to stay in the loop.",
+    cc3d:"Support for all LogLabs tools built for Linux.",
+    cc4d:"Direct support channel for ZER0 users.",
+    cc5d:"Deep technical questions, integration issues and developer-to-developer support.",
+    cc6d:"General inquiries, business and premium product questions.",
+    footer_tagline:"Independent software lab.<br>Open source & premium tools.",
+    f_proj:"Projects", f_conn:"Connect", f_supp:"Support",
+    f_email:"Email", f_tech:"Technical", f_issues:"Issues",
+    f_copy:"\u00a9 2026 LogLabs. Open source & premium software.",
   },
   es: {
-    nav_install:"Instalar", nav_features:"Funciones", nav_docs:"Docs", nav_wiki:"Wiki",
-    hero_title:"Gestor de alias de comandos<br>para <span class='accent'>Arch Linux</span>",
-    hero_sub:"Escribe menos. Haz más. +80 atajos incluidos. Sesión REPL interactiva.",
-    badge_os:"Código abierto",
-    btn_start:"→ Empezar", btn_github:"⌥ Ver en GitHub",
-    term_install_comment:"Instalar ZER0", term_open_comment:"Abrir ZER0",
-    term_hello:"Hola", term_online:"está en línea", term_devby:"Desarrollado por",
-    term_saved:"Atajo guardado",
-    sec_features:"funciones", sec_install:"instalación", sec_docs:"documentación",
-    features_title:"Todo lo que necesitas.<br>Nada más.",
-    f1_title:"+80 atajos por defecto",
-    f1_desc:"Pacman, Git, Docker, Python, Node, Systemd, red y más — listos desde el primer inicio.",
-    f2_title:"REPL interactivo",
-    f2_desc:"Tu propia sesión de shell con prompt <span class='ic'>[usuario@ZER0 ~]$</span> personalizado.",
-    f3_title:"Bilingüe",
-    f3_desc:"Soporte completo en español e inglés. Elige al instalar o cambia en vivo con <span class='ic'>lang</span>.",
-    f4_title:"Instalación en un archivo",
-    f4_desc:"Un solo <span class='ic'>install.sh</span> lo hace todo. Sin dependencias extra.",
-    f5_title:"100% local",
-    f5_desc:"Sin telemetría. Sin cuentas. Sin llamadas de red. Tus datos se quedan en tu máquina.",
-    f6_title:"Interfaz de terminal colorida",
-    f6_desc:"Banner estilizado, prompt de colores, UI en cajas y branding de LogLabs. Hecho para Arch.",
-    install_title:"Listo en<br>60 segundos",
-    step_clone:"Clonar", step_install:"Instalar", step_open:"Recargar y abrir",
-    install_note:"Tras instalar, ZER0 también responde a <span class='ic'>-Z</span> y <span class='ic'>$Z</span>.",
-    copy_btn:"copiar",
-    docs_title:"Referencia",
-    on_this_page:"En esta página",
-    dnav_commands:"Comandos internos", dnav_shortcuts:"Atajos por defecto",
-    dnav_config:"Configuración", dnav_update:"Actualizar", dnav_uninstall:"Desinstalar",
-    doc_commands_title:"Comandos internos",
-    doc_commands_desc:"Todos los comandos disponibles dentro de la sesión de ZER0. Sin prefijo.",
-    th_command:"Comando", th_aliases:"Aliases", th_desc:"Descripción",
-    th_shortcut:"Atajo",
-    cmd_list:"Listar todos los atajos", cmd_add:"Agregar o actualizar un atajo",
-    cmd_rm:"Eliminar un atajo", cmd_run:"Ejecutar un atajo",
-    cmd_clear:"Limpiar pantalla y mostrar banner", cmd_about:"Mostrar info sobre ZER0",
-    cmd_lang:"Cambiar idioma", cmd_help:"Mostrar lista de comandos",
-    cmd_version:"Mostrar versión actual", cmd_exit:"Salir de ZER0",
-    doc_shortcuts_title:"Atajos por defecto",
-    doc_shortcuts_desc:"+80 atajos cargados en el primer inicio. Escribe <span class='ic'>list</span> dentro de ZER0 para verlos.",
-    cat_pkg:"Gestión de paquetes",
-    wiki_link:"Ver los +80 atajos en la Wiki ↗",
-    doc_config_title:"Configuración",
-    doc_config_desc:"ZER0 guarda todo en <span class='ic'>~/.config/zer0/config.json</span>. Puedes editarlo manualmente.",
-    doc_config_note:"<span class='ic'>lang</span> acepta <span class='ic'>\"en\"</span> o <span class='ic'>\"es\"</span>.",
-    doc_update_title:"Actualizar",
-    doc_update_desc:"Cuando salga una nueva versión:",
-    doc_update_note:"Tus atajos, nombre e idioma nunca son tocados por el instalador.",
-    doc_uninstall_title:"Desinstalar",
-    doc_uninstall_note:"Luego elimina el bloque <span class='ic'># ─── ZER0 ───</span> de tu <span class='ic'>.bashrc</span> / <span class='ic'>.zshrc</span>.",
-    footer_desc:"Gestor de alias de comandos para Arch Linux",
-    footer_issues:"Reportar bug",
-    toast_lang:"Idioma: Español",
+    nav_about:"Nosotros", nav_software:"Software", nav_projects:"Proyectos",
+    nav_roadmap:"Roadmap", nav_blog:"Blog", nav_contact:"Contacto",
+    hero_eyebrow:"Herramientas para devs \u00b7 Open Source \u00b7 Premium",
+    hero_t1:"Software hecho", hero_t2:"diferente.",
+    hero_sub:"crea herramientas precisas y minimalistas para desarrolladores que cuidan su flujo de trabajo. Algunas gratis. Otras premium. Todas hechas con obsesi\u00f3n.",
+    hero_cta1:"Ver proyectos", hero_note:"Actualmente creando herramientas para Arch Linux.",
+    sec_about:"Nosotros", sec_software:"Modelo de software", sec_projects:"Proyectos",
+    sec_roadmap:"Roadmap", sec_blog:"Blog", sec_contact:"Contacto",
+    about_title:"Hecho por devs,<br>para devs.",
+    about_p1:"<strong>LogLabs</strong> es un laboratorio de software independiente. Construimos herramientas para desarrolladores que viven en la terminal y quieren que su flujo de trabajo se sienta <span class='hl'>preciso y r\u00e1pido</span>.",
+    about_p2:"Publicamos tanto herramientas <span class='hl'>open source gratuitas</span> como <span class='hl-gold'>software premium</span> \u2014 porque el buen tooling merece ser sostenible. El c\u00f3digo abierto es nuestra base, pero algunos proyectos ser\u00e1n de pago.",
+    about_p3:"Apuntamos a <strong>Arch Linux</strong> primero. No porque sea la \u00fanica plataforma que importa \u2014 sino porque sus usuarios exigen calidad, y la calidad viaja.",
+    m_file:"manifiesto.txt",
+    m1:"Construye herramientas precisas.", m2:"Obs\u00e9sionate con los detalles.", m3:"Respeta el tiempo del usuario.",
+    m4:"Open source cuando sea posible.", m5:"Premium cuando tenga sentido.", m6:"Nunca agregues bloat.",
+    soft_title:"Gratis & Premium.",
+    soft_sub:"Algunas herramientas siempre ser\u00e1n gratis. Otras ser\u00e1n productos premium. Ambas construidas con la misma obsesi\u00f3n.",
+    tier1_title:"Open Source", tier2_title:"Premium",
+    tier1_desc:"Utilidades b\u00e1sicas que pertenecen a la comunidad. Licencia MIT, gratis para siempre, abiertas a contribuciones.",
+    tier2_desc:"Herramientas avanzadas con m\u00e1s funciones, soporte dedicado y desarrollo activo. Vale cada peso.",
+    t1f1:"\u2713 \u00a0Licencia MIT", t1f2:"\u2713 \u00a0C\u00f3digo p\u00fablico", t1f3:"\u2713 \u00a0Contribuciones de la comunidad", t1f4:"\u2713 \u00a0Gratis para siempre",
+    t2f1:"\u2713 \u00a0Pago \u00fanico o suscripci\u00f3n", t2f2:"\u2713 \u00a0Soporte prioritario", t2f3:"\u2713 \u00a0Funciones avanzadas", t2f4:"\u2713 \u00a0Financia el desarrollo",
+    tier1_tag:"ZER0 est\u00e1 en este nivel", tier2_tag:"Pr\u00f3ximamente",
+    sec_projects:"Proyectos", proj_title:"Lo que hemos construido.", proj_live:"En vivo", tag_free:"Gratis",
+    zer0_desc:"Gestor de alias de comandos para Arch Linux con sesi\u00f3n REPL interactiva. +80 atajos incluidos para pacman, git, docker, systemd, python y m\u00e1s. Biling\u00fce. Instalaci\u00f3n en un archivo.",
+    zer0_visit:"\u2197 Ver sitio",
+    stat1:"Atajos por defecto", stat2_num:"Gratis", stat2:"Siempre", stat3:"Idiomas", stat4:"Archivo para instalar",
+    rm_title:"Lo que viene.", rm_done:"Completado", rm_active:"En progreso",
+    rm_pfree:"Planeado \u00b7 Gratis", rm_pprem:"Planeado \u00b7 Premium",
+    rm1_title:"ZER0 v1.0 \u2014 Lanzamiento inicial",
+    rm1_desc:"REPL interactivo, +80 atajos por defecto, soporte biling\u00fce, instalador en un archivo, GitHub Pages.",
+    rm2_title:"ZER0 \u2014 Documentaci\u00f3n y presencia web",
+    rm2_desc:"Wiki completa, sitio de LogLabs, experiencia de onboarding mejorada.",
+    rm3_title:"ZER0 v2.0 \u2014 Sistema de plugins",
+    rm3_desc:"Paquetes de atajos compartibles, colecci\u00f3n de la comunidad, comando de auto-actualizaci\u00f3n.",
+    rm4_title:"Nuevo proyecto \u2014 Por definir",
+    rm4_desc:"Algo m\u00e1s avanzado est\u00e1 en desarrollo. S\u00edguenos en GitHub y X para ser el primero en saber.",
+    blog_title:"Desde el laboratorio.", blog_et:"Posts pr\u00f3ximamente",
+    blog_ed:"Escribiremos sobre herramientas open source, Arch Linux, UX de terminal y el proceso de construcci\u00f3n de los proyectos de LogLabs.",
+    blog_follow:"Sigue a @LogLabsHQ en X para actualizaciones \u2192",
+    ct_title:"Cont\u00e1ctanos.",
+    ct_sub:"Tenemos distintos canales seg\u00fan lo que necesites. Elige el correcto.",
+    cc1t:"GitHub", cc2t:"\u{1D54F} (Twitter)", cc3t:"Soporte Linux",
+    cc4t:"Soporte ZER0", cc5t:"Soporte T\u00e9cnico", cc6t:"General y Negocios",
+    cc1d:"Para bugs, solicitudes de funciones y contribuciones. El mejor lugar para discusiones del proyecto.",
+    cc2d:"Anuncios, actualizaciones y conversaci\u00f3n general. S\u00edguenos para estar al d\u00eda.",
+    cc3d:"Soporte para todas las herramientas de LogLabs hechas para Linux.",
+    cc4d:"Canal de soporte directo para usuarios de ZER0.",
+    cc5d:"Preguntas t\u00e9cnicas profundas, problemas de integraci\u00f3n y soporte de dev a dev.",
+    cc6d:"Consultas generales, negocios y preguntas sobre productos premium.",
+    footer_tagline:"Laboratorio de software independiente.<br>Herramientas open source y premium.",
+    f_proj:"Proyectos", f_conn:"Conectar", f_supp:"Soporte",
+    f_email:"Correo", f_tech:"T\u00e9cnico", f_issues:"Issues",
+    f_copy:"\u00a9 2026 LogLabs. Software open source y premium.",
   }
 };
 
-let currentLang = localStorage.getItem('zer0_lang') || 'en';
+let lang = localStorage.getItem('loglabs_lang') || 'en';
 
-function setLang(lang) {
-  currentLang = lang;
-  localStorage.setItem('zer0_lang', lang);
-
-  // Update all data-i elements
+function setLang(l) {
+  lang = l;
+  localStorage.setItem('loglabs_lang', l);
+  document.documentElement.lang = l;
+  document.title = l === 'es' ? 'LogLabs \u2014 Software hecho diferente.' : 'LogLabs \u2014 Software built different.';
   document.querySelectorAll('[data-i]').forEach(el => {
-    const key = el.getAttribute('data-i');
-    if (T[lang][key] !== undefined) el.innerHTML = T[lang][key];
+    const v = T[l][el.getAttribute('data-i')];
+    if (v !== undefined) el.innerHTML = v;
   });
-
-  // Update html lang attr
-  document.documentElement.lang = lang;
-
-  // Update title
-  document.title = lang === 'es'
-    ? 'ZER0 — Gestor de alias para Arch Linux'
-    : 'ZER0 — Command alias manager for Arch Linux';
-
-  // Update lang buttons
   document.querySelectorAll('.lang-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.textContent === lang.toUpperCase());
-  });
-
-  // Toast
-  showToast(T[lang].toast_lang);
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2000);
-}
-
-function copyCode(btn, id) {
-  const text = document.getElementById(id).innerText;
-  navigator.clipboard.writeText(text).then(() => {
-    const copied = currentLang === 'es' ? '¡copiado!' : 'copied!';
-    btn.textContent = copied;
-    btn.classList.add('copied');
-    showToast(currentLang === 'es' ? '¡Copiado al portapapeles!' : 'Copied to clipboard!');
-    setTimeout(() => {
-      btn.innerHTML = T[currentLang].copy_btn;
-      btn.classList.remove('copied');
-    }, 2000);
+    btn.classList.toggle('active', btn.textContent === l.toUpperCase());
   });
 }
 
-// Active docs nav
-const sections = document.querySelectorAll('.docs-content section');
-sections.forEach(s => {
-  new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        document.querySelectorAll('.docs-nav a').forEach(a => a.classList.remove('active'));
-        const a = document.querySelector(`.docs-nav a[href="#${e.target.id}"]`);
-        if (a) a.classList.add('active');
-      }
-    });
-  }, { threshold: 0.3, rootMargin: '-60px 0px 0px 0px' }).observe(s);
-});
+setLang(lang);
 
-// Init with saved lang
-setLang(currentLang);
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+  });
+}, {threshold:.08});
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+const secs = document.querySelectorAll('section[id]');
+const navAs = document.querySelectorAll('.nav-links a[href^="#"]');
+secs.forEach(s => new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navAs.forEach(a => a.style.color = '');
+      const a = document.querySelector('.nav-links a[href="#' + e.target.id + '"]');
+      if (a) a.style.color = 'var(--white)';
+    }
+  });
+}, {threshold:.4}).observe(s));
 </script>
 </body>
 </html>
